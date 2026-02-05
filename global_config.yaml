@@ -1,0 +1,4 @@
+max_iterations: 1000
+tol: 1e-9
+cudas_allowed: [6, 7]
+debiasing_update_freq: 2

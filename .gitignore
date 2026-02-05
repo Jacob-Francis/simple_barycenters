@@ -210,3 +210,7 @@ __marimo__/
 # custom
 *.err
 *.out
+*.pkl
+*.png
+
+.snakemake/
