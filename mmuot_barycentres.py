@@ -12,7 +12,7 @@ muot_cost_file = snakemake.output[0].split('/')[-1].replace('.pkl', '')
 epsilon = float(muot_cost_file.split('_')[3])
 rho = float(muot_cost_file.split('_')[5])
 aprox_type = muot_cost_file.split('_')[7]
-debiasing = muot_cost_file.split('_')[9]
+debiasing = muot_cost_file.split('_')[9] == 'True' # its boolean
 
 print(f" epsilon={epsilon}, rho={rho}, aprox_type={aprox_type}")
 import yaml
@@ -36,6 +36,8 @@ for i in cudas_allowed:
         best_gpu = i
 
 cuda = best_gpu
+# cuda = np.random.choice(cudas_allowed)
+# print(f"Using cuda device: {cuda} from {cudas_allowed}")
 
 # load the data
 with open(snakemake.input[0], 'rb') as f:

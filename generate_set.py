@@ -1,19 +1,21 @@
 import pwbarycentres as pwb
 from graph_dp import SinkhornDataProcessor
 from utils import *
-
+import numpy as np
 import pickle
 import torch
 
 import os 
 
-members = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
 
 set_number = int(snakemake.wildcards['data_set'])
 
 data_list = []
 dictionary_in_time = {}
+
+rng = np.random.default_rng(seed=12345)
 
 
 if set_number == 1:
@@ -24,12 +26,12 @@ if set_number == 1:
     # 1) generate circle at centre
     data_list = []
     for mem in members:
-        F, X = generate_circle_ensemble(mem, 30, path_to_data, seed_pert=11)
+        F, X = generate_circle_ensemble(mem, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         data_list.append([F, None])
 
     # generate the observation too as a random perturbation
-    O, X = generate_circle_ensemble(0, 30, path_to_data, seed_pert=11)
+    O, X = generate_circle_ensemble(0, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
     dictionary_in_time[count] = dict(
         observation = [O, None],
@@ -41,13 +43,13 @@ if set_number == 1:
     # 2) generate circle off centre
     data_list = []
     for mem in members:
-        F, X = generate_circle_ensemble(mem, 30, path_to_data, seed_pert=7)
+        F, X = generate_circle_ensemble(mem, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         F = np.roll(F, 40, axis=1)
         F = np.roll(F, 40, axis=0)
         data_list.append([F, None])
 
     # generate the observation too as a random perturbation
-    O, X = generate_circle_ensemble(0, 30, path_to_data, seed_pert=7)
+    O, X = generate_circle_ensemble(0, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
     O = np.roll(O, 40, axis=1)
     O = np.roll(O, 40, axis=0)
 
@@ -61,12 +63,12 @@ if set_number == 1:
     #3) generatre ellipse at centre
     data_list = []
     for mem in members:
-        F, X = generate_ellipse_ensemble(mem, 30, path_to_data, seed_pert=5)
+        F, X = generate_ellipse_ensemble(mem, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         data_list.append([F, None])
 
     # generate the observation too as a random perturbation
-    O, X = generate_ellipse_ensemble(0, 30, path_to_data, seed_pert=5)
+    O, X = generate_ellipse_ensemble(0, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
     dictionary_in_time[count] = dict(
         observation = [O, None],
@@ -78,12 +80,12 @@ if set_number == 1:
     # 4) generatre ellipse at angle
     data_list = []
     for mem in members:
-        F, X = generate_ellipse_ensemble(mem, 30, path_to_data, seed_pert=12, case='E2')
+        F, X = generate_ellipse_ensemble(mem, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E2')
 
         data_list.append([F, None])
 
     # generate the observation too as a random perturbation
-    O, X = generate_ellipse_ensemble(0, 30, path_to_data, seed_pert=12, case='E2')
+    O, X = generate_ellipse_ensemble(0, 30, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E2')
 
     dictionary_in_time[count] = dict(
         observation = [O, None],
@@ -103,12 +105,12 @@ elif set_number == 2:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_rotated_ellipse_ensemble(mem, np.pi*t/16, path_to_data, seed_pert=1)
+            F, X = generate_rotated_ellipse_ensemble(mem, np.pi*t/16, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_rotated_ellipse_ensemble(0, np.pi*t/16, path_to_data, seed_pert=1)
+        O, X = generate_rotated_ellipse_ensemble(0, np.pi*t/16, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -125,7 +127,7 @@ elif set_number == 3:
     for t in times:
         data_list = []
         for mem in members:
-            O, F, X = generate_double_penalty_circle_ensemble(mem, t, 20, path_to_data)
+            O, F, X = generate_double_penalty_circle_ensemble(mem, t, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
 
@@ -144,7 +146,7 @@ elif set_number == 4:
     for t in times:
         data_list = []
         for mem in members:
-            O, F, X = generate_double_penalty_circle_ensemble(mem, t, 40, path_to_data)
+            O, F, X = generate_double_penalty_circle_ensemble(mem, t, 40, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
 
@@ -164,11 +166,11 @@ elif set_number == 5:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data)
+            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
         
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data)
+        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -186,11 +188,11 @@ elif set_number == 6:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data)
+            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
         
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data)
+        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -208,18 +210,17 @@ elif set_number == 7:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data)
+            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
             data_list.append([F, None])
         
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data)
+        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
         dictionary_in_time[t] = dict(
             observation = [O, None],
             forecasts = data_list
             )
 
     dictionary_in_time['times'] = times
-
 
 elif set_number == 8:
     # ---------------------------------------
@@ -230,11 +231,11 @@ elif set_number == 8:
     # 1) Anulus
     data_list = []
     for mem in members:
-        F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=0, path_to_data=path_to_data)
+        F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=0, path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
         F = np.roll(F, 50, axis=1) # roll back to centre
         data_list.append([F, None])
 
-    O, X = generate_cone_section_ensemble(0, r1=60, r0=40, angle=0, path_to_data=path_to_data)
+    O, X = generate_cone_section_ensemble(0, r1=60, r0=40, angle=0, path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
     O = np.roll(O, 50, axis=1) # roll back to centre
 
     dictionary_in_time[count] = dict(
@@ -246,11 +247,11 @@ elif set_number == 8:
     # 2) Half cone section at 90 degrees
     data_list = []
     for mem in members:
-        F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data)
+        F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         data_list.append([F, None])
 
-    O, X = generate_cone_section_ensemble(0, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data)
+    O, X = generate_cone_section_ensemble(0, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
     dictionary_in_time[count] = dict(
         observation = [O, None],
         forecasts = data_list
@@ -262,14 +263,14 @@ elif set_number == 8:
     data_list = []
     for mem in members:
 
-        cluster = np.random.choice([-50, 50], size=1)
-        F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=17)
+        cluster = rng.choice([-50, 50], size=1)
+        F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         F = np.roll(F, cluster, axis=1)
 
         data_list.append([F, None])
 
-    cluster = np.random.choice([-50, 50], size=1)
-    O, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=17)
+    cluster = rng.choice([-50, 50], size=1)
+    O, X = generate_circle_ensemble(0, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
     O = np.roll(O, cluster, axis=1)
 
     dictionary_in_time[count] = dict(
@@ -283,10 +284,10 @@ elif set_number == 8:
     data_list = []
     for mem in members:
 
-        F, X = generate_two_circle_event_clusters(mem, 20, [-50, 0], [50, 0], path_to_data, seed_pert=123)
+        F, X = generate_two_circle_event_clusters(mem, 20, [-50, 0], [50, 0], path_to_data, seed_pert=rng.integers(0,int(1e7)))
         data_list.append([F, None])
 
-    O, X = generate_two_circle_event_clusters(0, 20, [-50, 0], [50, 0], path_to_data, seed_pert=123)
+    O, X = generate_two_circle_event_clusters(0, 20, [-50, 0], [50, 0], path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
     dictionary_in_time[count] = dict(
         observation = [O, None],
@@ -314,7 +315,7 @@ elif set_number == 9:
         data_list = []
         for k, mem in enumerate(members):
             cluster = clusters[k]
-            F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=17*(t+1))
+            F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
             F = np.roll(F, cluster, axis=1)
 
             data_list.append([F, None])
@@ -322,7 +323,7 @@ elif set_number == 9:
         # shuffle over a member
         clusters[t+1] = 50
         cluster = -50
-        O, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=17)
+        O, X = generate_circle_ensemble(0, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         O = np.roll(O, cluster, axis=1)
 
         dictionary_in_time[t] = dict(
@@ -381,12 +382,12 @@ elif set_number == 12:
 
     for t in times:
         data_list = []
-        O, X = generate_circle_ensemble(0, 0, path_to_data)
+        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         mass = O.sum()
         for mem in members:
             # rnage changed with t
             dia_vals = np.arange(40-t, 40+t+1)
-            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=42, diameter=np.random.choice(dia_vals))
+            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(dia_vals))
             F /= F.sum()
             F *= mass
             data_list.append([F, None])
@@ -406,12 +407,12 @@ elif set_number == 13:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=42, diameter=None)
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=None)
 
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_circle_ensemble(0, t, path_to_data)
+        O, X = generate_circle_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -429,7 +430,7 @@ elif set_number == 14:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=42, diameter=40)
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=20)
 
             data_list.append([F, None])
         
@@ -452,7 +453,7 @@ elif set_number == 15:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=42, diameter=60)
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=60)
 
             data_list.append([F, None])
         
@@ -474,12 +475,12 @@ elif set_number == 16:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=42, diameter=np.random.choice(np.arange(20, 60)))
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(np.arange(20, 60)))
 
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_circle_ensemble(0, t, path_to_data)
+        O, X = generate_circle_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -496,12 +497,14 @@ elif set_number == 17:
 
     for t in times:
         data_list = []
+        amp_scale = [-0.05*t, 0.05*t]
+
         for mem in members:
-            F, X = generate_ellipse_ensemble(mem, 0, path_to_data, seed_pert=9, case='E1', amp_scale=0.05*t)
+            F, X = generate_ellipse_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_ellipse_ensemble(mem, 0, path_to_data, seed_pert=9, case='E1', amp_scale=0.05*t)
+        O, X = generate_ellipse_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -519,11 +522,11 @@ elif set_number == 18:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_intensity_errors_ensemble(mem, np.random.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=1, diameter=100)
+            F, X = generate_intensity_errors_ensemble(mem, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_intensity_errors_ensemble(0, np.random.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=1, diameter=100)
+        O, X = generate_intensity_errors_ensemble(0, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -543,13 +546,13 @@ elif set_number == 19:
         data_list = []
         for mem in members:
             if mem in [k for k in range(t)]:
-                F, X = generate_extreme_event(mem, 2, 5, 5, path_to_data, seed_pert=1, diameter=100)
+                F, X = generate_extreme_event(mem, 2, 5, 5, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
             else:
-                F, X = generate_intensity_errors_ensemble(mem, 0, 0, path_to_data, seed_pert=1, diameter=100)
+                F, X = generate_intensity_errors_ensemble(mem, 0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_extreme_event(0, 2, 5, 5, path_to_data, seed_pert=1, diameter=100)
+        O, X = generate_extreme_event(0, 2, 5, 5, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
         dictionary_in_time[t] = dict(
             observation = [O, None],
             forecasts = data_list
@@ -568,13 +571,13 @@ elif set_number == 20:
         data_list = []
         for mem in members:
             if mem in [k for k in range(t)]:
-                F, X = generate_extreme_event(mem, 2, 5, 5, path_to_data, seed_pert=1, diameter=100)
+                F, X = generate_extreme_event(mem, 2, 5, 5, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
             else:
-                F, X = generate_intensity_errors_ensemble(mem, 0, 0, path_to_data, seed_pert=1, diameter=100)
+                F, X = generate_intensity_errors_ensemble(mem, 0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_extreme_event(0, 0, 5, 5, path_to_data, seed_pert=1, diameter=100)
+        O, X = generate_extreme_event(0, 0, 5, 5, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
         dictionary_in_time[t] = dict(
             observation = [O, None],
             forecasts = data_list
@@ -599,16 +602,98 @@ elif set_number == 21:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_multiscale_ellipse_ensemble(mem, t, path_to_data, seed_pert=1)
+            F, X = generate_multiscale_ellipse_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=1)
+        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         dictionary_in_time[t] = dict(
             observation = [O, None],
             forecasts = data_list
             )
     dictionary_in_time['times'] = times
+
+
+elif set_number == 22:
+    # ---------------------------------------
+    # Set 22: multiscale under spread : large error!
+    # ---------------------------------------
+
+    # I should abstract this...
+    times = [0, 5, 10, 15, 20]
+    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
+
+    # Gather time series data
+    data_list = []
+    dictionary_in_time = {}
+    for t in times:
+        data_list = []
+        for mem in members:
+            F, X = generate_multiscale_ellipse_ensemble(mem, t/2, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+            data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+elif set_number == 23:
+    # ---------------------------------------
+    # Set 23: multiscale under spread : larger error!
+    # ---------------------------------------
+
+    # I should abstract this...
+    times = [0, 5, 10, 15, 20]
+    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
+
+    # Gather time series data
+    data_list = []
+    dictionary_in_time = {}
+    for t in times:
+        data_list = []
+        for mem in members:
+            F, X = generate_multiscale_ellipse_ensemble(mem, t/3, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+            data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+
+elif set_number == 24:
+    # ---------------------------------------
+    # Set 24: multiscale over spread : larger spread!
+    # ---------------------------------------
+
+    # I should abstract this...
+    times = [0, 5, 10, 15, 20]
+    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
+
+    # Gather time series data
+    data_list = []
+    dictionary_in_time = {}
+    for t in times:
+        data_list = []
+        for mem in members:
+            F, X = generate_multiscale_ellipse_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+            data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_multiscale_ellipse_ensemble(0, t/2, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+
 else:
     raise ValueError('Set number not recognised {}'.format(set_number))
 
@@ -624,28 +709,33 @@ cols = 4
 
 fig = plt.figure(figsize=(cols * 5, rows * 4))
 
-
 for t in times:
-
     obs = dictionary_in_time[t]['observation']
     forecasts_mean = np.stack([k[0] for k in dictionary_in_time[t]['forecasts']], axis=-1).mean(-1)
     ax = fig.add_subplot(rows, cols, times.index(t)+1)
     ax.set_title(f't = {t}')
-    im = ax.pcolormesh(X[:, :, 0], X[:, :, 1], forecasts_mean, cmap='viridis')
+    ax.set_facecolor("#f9f6f1")
+
+
+    im = ax.pcolormesh(
+        X[:, :, 0],
+        X[:, :, 1],
+        np.ma.masked_where(forecasts_mean <= 0, forecasts_mean),
+        cmap='Blues',
+        shading='auto'
+    )
     plt.colorbar(im, ax=ax, label='Forecast Mean')
-    # ax.scatter(X[:, :, 0][obs[0]>0], X[:, :, 1][obs[0]>0], c=obs[0][obs[0]>0], cmap='Reds', label='Observation', alpha=0.5)
-    mask = obs[0]>0
+
     ax.contour(
         X[:, :, 0],
         X[:, :, 1],
-        mask.astype(int),
-        levels=[0.5],
-        colors='red',
-        linestyles='dotted',
+        obs[0],
+        levels=[np.unique(obs[0])[1]-1e-9] if len(np.unique(obs[0])) == 2 else [np.unique(obs[0])[1]-1e-9, np.unique(obs[0])[2]-1e-9],
+        # cmap='copper',
+        colors="#b98224",
+        linestyles='dashdot',
         linewidths=2,
-        label='Observation'
     )
-    ax.legend()
 
 plt.savefig(snakemake.output[1])
 

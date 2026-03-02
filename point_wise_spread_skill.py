@@ -20,7 +20,7 @@ X = dictionary_in_time['grid']
 
 def ensemble_mean_error(mean, observation):
     M = np.prod(observation.shape)
-    return np.sqrt(((mean - observation)**2).sum() / M)
+    return np.sqrt((mean - observation)**2)
 
 def summary_ensemble_mean_error(mean, observation):
     temp = ensemble_mean_error(mean, observation)
@@ -96,4 +96,4 @@ axes[1].set_ylabel("Spread")
 axes[1].grid(True)
     
 plt.tight_layout()
-plt.savefig(snakemake.output[2])
+plt.savefig(snakemake.output[0])

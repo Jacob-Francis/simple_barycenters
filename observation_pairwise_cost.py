@@ -34,6 +34,7 @@ with open("global_config.yaml") as f:
 
 globals().update(global_config)
 tol = float(tol)
+mmuot_tol = float(mmuot_tol)
 
 # pick cuda device
 best_gpu = None
@@ -49,7 +50,8 @@ for i in cudas_allowed:
 
 cuda = best_gpu
 # cuda = np.random.choice(cudas_allowed)
-print(f"Using cuda device: {cuda} from {cudas_allowed}")
+# print(f"Using cuda device: {cuda} from {cudas_allowed}")
+
 
 # load the data
 with open(snakemake.input[0], 'rb') as f:
@@ -64,6 +66,7 @@ cost_list = []
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
 for t in times:
+    centre_data=dictionary_in_time[t]['observation']
     data_bary_list = dictionary_in_time[t]['forecasts']
     # Generate data holding class
     data_processor = pwb.generate_barycentredataprocessor(
@@ -82,8 +85,8 @@ for t in times:
                 epsilon=epsilon,
                 rho=rho,
                 aprox=aprox_type,
-                max_iterates=max_iterations,
-                tol=tol,
+                max_iterates=mmuot_max_iterations,
+                tol=mmuot_tol,
                 epsilon_annealing=False,
                 debiasing=debiasing,
                 verbose=False,
@@ -91,7 +94,8 @@ for t in times:
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
-                }
+                },
+                fixed_barycentre=centre_data[0]
             )
         )
     except ValueError:
@@ -102,8 +106,8 @@ for t in times:
                 epsilon=epsilon,
                 rho=rho,
                 aprox=aprox_type,
-                max_iterates=max_iterations*5,
-                tol=tol,
+                max_iterates=mmuot_max_iterations*5,
+                tol=mmuot_tol,
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
@@ -111,7 +115,8 @@ for t in times:
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
-                }
+                },
+                fixed_barycentre=centre_data[0]
             )
         )
 
@@ -127,50 +132,16 @@ for t in times:
             debiasing=debiasing,
             verbose=False,
             return_breakdown=True,
+            fixed_barycentre=centre_data[0]
+
         )
     
     cost_list.append([se_dict, constraint_dict])
 
-    # convergence checks
+    print('convergence check: ', potential_error_list[-1], barycentre_error_list[-1])
+    for keys in constraint_dict.keys():
+        print(f"constraint {keys} is {constraint_dict[keys][-1]}")
 
-    ax[0].semilogy(barycentre_error_list, label=f"{t}")
-    ax[0].set_xlabel("Outer Iteration")
-    ax[0].set_ylabel("Bary update change")
-
-    ax[1].semilogy(potential_error_list, label=f"{t}")
-    ax[1].set_xlabel("Outer Iteration")
-    ax[1].set_ylabel("potential update change")
-    
-plt.savefig(snakemake.output[1])
-plt.clf()
-
-# save the data
 with open(snakemake.output[0], "wb") as f:
-    pickle.dump(bary_list, f)
-
-with open(snakemake.output[3], "wb") as f:
     pickle.dump(cost_list, f)
-
-
-# save the barycentres
-# -------------------------------------------
-# PLOTTING:
-# -------------------------------------------
-
-# Plot the four density fields
-fig, axes = plt.subplots(len(times), 3, figsize=(13, 5*len(times)))
-
-for k, t in enumerate(times):
-    ensemble_mean = np.mean(np.stack([f for f,k in dictionary_in_time[t]['forecasts']]), axis=0)
-
-    img = axes[k, 0].imshow(ensemble_mean.reshape(200,  200), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
-    fig.colorbar(img, ax=axes[k, 0])
-
-    img = axes[k, 1].imshow(dictionary_in_time[t]['observation'][0].reshape(200,  200), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
-    fig.colorbar(img, ax=axes[k, 1])
-
-    img = axes[k, 2].imshow(bary_list[k].reshape(200,  200).detach().cpu().numpy(), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
-    fig.colorbar(img, ax=axes[k, 2])
-
-plt.savefig(snakemake.output[2])
 

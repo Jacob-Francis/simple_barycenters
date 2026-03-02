@@ -1,6 +1,7 @@
 
 import torch
 from utils import mmuot_general_costings
+import numpy as np
 
 # break down snakemake input into details
 muot_cost_file = snakemake.output[0].split('/')[-1].replace('.pkl', '')
@@ -17,6 +18,7 @@ with open("global_config.yaml") as f:
 
 globals().update(global_config)
 tol = float(tol)
+mmuot_tol = float(mmuot_tol)
 
 # pick cuda device
 best_gpu = None
@@ -31,6 +33,8 @@ for i in cudas_allowed:
         best_gpu = i
 
 cuda = best_gpu
+# cuda = np.random.choice(cudas_allowed)
+print(f"Using cuda device: {cuda} from {cudas_allowed}")
 
 # load the barycentre list data
 with open(snakemake.input[0], 'rb') as f:
@@ -54,8 +58,8 @@ for k, t in enumerate(times):
     epsilon=epsilon, 
     rho=rho, 
     aprox_type=aprox_type, 
-    max_iterates=max_iterations, 
-    tol=tol, 
+    max_iterates=mmuot_max_iterations, 
+    tol=mmuot_tol, 
     grid=grid, 
     device=f'cuda:{cuda}'
     )

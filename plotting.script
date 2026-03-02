@@ -1,0 +1,9 @@
+#!/bin/bash
+
+data_set="21"
+
+cd /home/jjf817/PhD_jobs/simple_barycentres || exit 1
+
+python3 plotting_curve.py $data_set
+python3 plotting_bary_pov_grids.py $data_set
+python3 plotting_se_spread.py $data_set

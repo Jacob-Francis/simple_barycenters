@@ -129,7 +129,7 @@ def generate_guassian_densities_with_uniform_barycentre(
 
 
 def generate_circle_ensemble(member, r, path_to_data, seed_pert=1, diameter=None):
-    rng_state = np.random.RandomState((member + r**2)*12357*seed_pert)
+    rng_state = np.random.RandomState((member + r**2)*12357 + seed_pert)
     
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
@@ -163,7 +163,7 @@ def generate_intensity_errors_ensemble(member, amp, r, path_to_data, seed_pert=1
     """
     amp is proportional to 1, and then the whole field is normalised by 1873.5 at the end
     """
-    rng_state = np.random.RandomState((member + r**2+diameter)*1357*seed_pert)
+    rng_state = np.random.RandomState((member + r**2+diameter)*1357 + seed_pert)
 
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'E5', 'E5', path_to_data=path_to_data
@@ -198,7 +198,7 @@ def generate_intensity_errors_ensemble(member, amp, r, path_to_data, seed_pert=1
 
 
 def generate_extreme_event(member, amp, r, ext_diam, path_to_data, seed_pert=1, diameter=100, x_shift=-20):
-    rng_state = np.random.RandomState((member + r**2 + ext_diam)*123*seed_pert)
+    rng_state = np.random.RandomState((member + r**2 + ext_diam)*123 + seed_pert)
     
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
@@ -249,7 +249,7 @@ def generate_extreme_event(member, amp, r, ext_diam, path_to_data, seed_pert=1, 
     return X_precipitation, X_coordinates
 
 def generate_two_circle_event_clusters(member, r, centre1, centre2, path_to_data, seed_pert=1):
-    rng_state = np.random.RandomState((member + r**2)*2227*seed_pert)
+    rng_state = np.random.RandomState((member + r**2)*2227 + seed_pert)
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
     )
@@ -281,13 +281,16 @@ def generate_two_circle_event_clusters(member, r, centre1, centre2, path_to_data
 
 
 def generate_ellipse_ensemble(member, r, path_to_data, seed_pert=1, case='E1', amp_scale=0):
-    rng_state = np.random.RandomState((member + r**2)*3334*seed_pert)
+    rng_state = np.random.RandomState((member + r**2)*3334 + seed_pert)
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         case, case, path_to_data=path_to_data
     )
 
     if amp_scale != 0:
-        X_precipitation *= rng_state.normal(loc=X_precipitation.max(), scale=amp_scale)
+        X_precipitation *= rng_state.uniform(
+            low=X_precipitation.max()*(1 + amp_scale[0]), 
+            high=X_precipitation.max()*(1 + amp_scale[1])
+        )
 
     # Create same with rejction sampling + shift
     if r > 0:
@@ -305,8 +308,8 @@ def generate_ellipse_ensemble(member, r, path_to_data, seed_pert=1, case='E1', a
     return X_precipitation, X_coordinates
 
 
-def generate_double_penalty_circle_ensemble(member, t, r, path_to_data):
-    rng_state = np.random.RandomState(int(member + t**2 + r)*12333)
+def generate_double_penalty_circle_ensemble(member, t, r, path_to_data, seed_pert=1):
+    rng_state = np.random.RandomState(int(member + t**2 + r)*12333 + seed_pert)
 
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
@@ -327,15 +330,16 @@ def generate_double_penalty_circle_ensemble(member, t, r, path_to_data):
     return Y_precipitation,  X_precipitation, X_coordinates
 
 
-def generate_case_ensemble(case, path_to_data):
+def generate_case_ensemble(case, path_to_data, seed_pert=1):
+    rng_state = np.random.RandomState(seed_pert)
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         case, case, path_to_data=path_to_data
     )
 
     return Y_precipitation,  X_precipitation, X_coordinates
 
-def generate_double_penalty_circle_ensemble_with_noise(member, t, r, noise, path_to_data):
-    rng_state = np.random.RandomState(int(member + t**2 + r)*353535)
+def generate_double_penalty_circle_ensemble_with_noise(member, t, r, noise, path_to_data, seed_pert=1):
+    rng_state = np.random.RandomState(int(member + t**2 + r)*353535 + seed_pert)
     
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
@@ -369,8 +373,8 @@ def generate_double_penalty_circle_ensemble_with_noise(member, t, r, noise, path
     return Y_precipitation,  X_precipitation, X_coordinates
 
 
-def generate_cone_section_ensemble(member, r1, r0, angle, path_to_data):
-    rng_state = np.random.RandomState(int(member + r0+r1**2*angle)*4567)
+def generate_cone_section_ensemble(member, r1, r0, angle, path_to_data, seed_pert=1):
+    rng_state = np.random.RandomState(int(member + r0+r1**2*angle)*4567 + seed_pert)
     X_coordinates, X_precipitation, Y_coordinates, Y_precipitation, mass_x, mass_y = load_test_fields_bias_scaling(
         'C1', 'C1', path_to_data=path_to_data
     )
@@ -439,7 +443,7 @@ def random_circluar_pert(X, r, rng_state):
 
 def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1):
     # same mass but different rotations
-    rng_state = np.random.RandomState(int(member + angle_r**2)*5678*seed_pert)
+    rng_state = np.random.RandomState(int(member + angle_r**2)*5678 + seed_pert)
 
     X_coordinates, _, _, _, _, _ = load_test_fields_bias_scaling(
         'E5', 'E5', path_to_data=path_to_data
@@ -447,7 +451,7 @@ def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1
     
     X_precipitation = ellipse_mask(
         center=(100, 100),
-        axes=(100,40),
+        axes=(100,20),
         angle= np.pi/4 + rng_state.uniform(-angle_r, angle_r)
         )
     # scale back
@@ -457,7 +461,7 @@ def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1
 
 def generate_multiscale_ellipse_ensemble(member, r, path_to_data, seed_pert=1):
     # same mass but different scales
-    rng_state = np.random.RandomState(int(member + r**2)*5432*seed_pert)
+    rng_state = np.random.RandomState(int(member + r**2)*5432 + seed_pert)
     
     X_coordinates, X_precipitation, _, _, _, _ = load_test_fields_bias_scaling(
         'E5', 'E5', path_to_data=path_to_data
@@ -713,3 +717,67 @@ def mmuot_general_costings(
     
     return cost, cost_dict
 
+def calculate_true_spread_skill(data_set_path):
+    with open(data_set_path, 'rb') as f:
+        dictionary_in_time = pickle.load(f)
+
+    times =dictionary_in_time['times'] 
+    members=dictionary_in_time['members']
+
+    # -------------------------------------------
+    # Compute the skill scores:
+    # -------------------------------------------
+
+    def ensemble_mean_error(mean, observation):
+        M = np.prod(observation.shape)
+        return np.sqrt(((mean - observation)**2) / M)
+
+    def summary_ensemble_mean_error(mean, observation):
+        temp = ensemble_mean_error(mean, observation)
+        return np.mean(temp), np.std(temp)
+
+    def spread(densities, mean):
+        batch_densities = np.stack(densities, axis=-1)
+        M = np.prod(mean.shape)
+        N = len(densities)
+        return np.sqrt(((batch_densities.reshape(-1,N) - mean.reshape(-1, 1))**2).sum(axis=-1)/(N-1))
+
+    def summary_spread(densities, mean):
+        temp = spread(densities, mean)
+        return np.mean(temp), np.std(temp)
+
+    mu_e_list = []
+    sd_e_list = []
+    mu_s_list = []
+    st_s_list = []
+
+    ensemble_mean_list = []
+    for k,t in enumerate(times):
+        size = len(members)
+        ensemble_mean_l2 =  np.zeros_like(dictionary_in_time[t]['forecasts'][0][0])
+        for mem in members:
+            ensemble_mean_l2 += dictionary_in_time[t]['forecasts'][mem][0]
+        ensemble_mean_l2 /= size
+        ensemble_mean_list.append(ensemble_mean_l2)
+
+    for k, t in enumerate(times):
+        ensemble_mean_l2 = ensemble_mean_list[k]
+        mu_e, sd_e = summary_ensemble_mean_error(ensemble_mean_l2, dictionary_in_time[t]['observation'][0])
+        ensemble_members = [dictionary_in_time[t]['forecasts'][mem][0] for mem in members]
+        mu_s, st_s = summary_spread(ensemble_members, ensemble_mean_l2)
+        mu_e_list.append(mu_e.item())
+        sd_e_list.append(sd_e.item())
+        mu_s_list.append(mu_s.item())
+        st_s_list.append(st_s.item())    
+
+
+    # ----------------------------------------------------
+    # plot
+    # ----------------------------------------------------
+    mu_e = np.array(mu_e_list)
+    sd_e = np.array(sd_e_list)
+
+    mu_s = np.array(mu_s_list)
+    sd_s = np.array(st_s_list)
+
+    return mu_e, sd_e, mu_s, sd_s

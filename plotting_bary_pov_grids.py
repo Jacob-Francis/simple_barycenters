@@ -1,0 +1,146 @@
+
+# actually maybe it's over a few epsilon? Or a few rho? but unified in type for sure.
+# input [0] ROOT_FILE+"pkl/barycentre_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
+# input [1]  ROOT_FILE+"pkl/barycentre_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
+
+
+# load data
+import pickle
+import torch
+import matplotlib.pyplot as plt
+import numpy as np
+
+import sys
+
+# Get arguments after script name
+args = sys.argv[1:]
+
+# Convert to list of ints
+data_sets = list(map(int, args))
+
+# should abstract times and members from global config
+epsilons = [0.005, 0.0005] #0.01,
+rhos = [1.0, 0.001]
+aprox_types = ['kl', 'tv'] # 'balanced',
+# data_sets = [21] # [1, 2, 3, 4, 6, 10, 12, 13, 14, 15, 16, 18, 19, 20, 21]  # [ 2, 5, 7, 8,9,  17, 11] 2 5, 7, 8,9,  17, 11
+ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
+
+# colour blind friendly colors
+colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
+#different marker for aprox
+markers = dict(kl='o', balanced='s', tv='^')
+
+
+for data_set in data_sets:
+    data_file = ROOT_FILE+f"ensemble_data/ensemble_dataset_{data_set}.pkl"
+
+    with open(data_file, 'rb') as f:
+        dataset = pickle.load(f)
+    times = dataset['times']
+    members = dataset['members']
+    X = dataset['grid']
+
+    for k,t in enumerate(times):
+        print(f"Time: {t}")
+        obs_mass = sum(dataset[t]['observation'][0].flatten())
+        # ensemble mean
+        ensemble_mean = np.mean([f[0] for f in dataset[t]['forecasts']], axis=0)
+        for epsilon in epsilons:
+            count = 0
+            fig, ax = plt.subplots(2, 4, figsize=(8*4, 5*4))
+
+            plt.rcParams.update({"font.size": 14})
+
+            for l, debiasing in enumerate([True, False]):
+                axes = [ax[l, 0], ax[l, 1], ax[l, 2], ax[l, 3]]
+                for j, (rho, aprox_type) in enumerate([(1.0, 'kl'), (0.001, 'kl'), (1.0, 'tv'),  (0.001, 'tv')]):
+                    # actually maybe it's over a few epsilon? Or a few rho? but unified in type for sure.
+                    bary_file = ROOT_FILE+f"pkl/{data_set}/barycentre_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
+                    obs_file = ROOT_FILE+f"pkl/{data_set}/observation_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}.pkl"
+                    cost_file = ROOT_FILE+f"pkl/{data_set}/barycentres_costs_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
+                    act_bary = ROOT_FILE+f"pkl/{data_set}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
+
+                    with open(act_bary, 'rb') as f:
+                        bary_output = pickle.load(f)
+
+                    with open(bary_file, 'rb') as f:
+                        bary_mmuot_cost = pickle.load(f)
+
+                    with open(obs_file, 'rb') as f:
+                        observation_costs = pickle.load(f)
+                    
+                    with open(cost_file, 'rb') as f:
+                        se_costs = pickle.load(f)
+
+                    temp0 = np.zeros(len(members)+1)
+                    for i in range(len(members)+1):
+                        temp0[i] = observation_costs[t][f'debias_{i}']
+                    obs_skill = (observation_costs[t]['bias'] - 1/(len(members)+1) * temp0.sum()).item()
+
+                    temp0 = np.zeros(len(members)+1)
+                    for i in range(len(members)+1):
+                        temp0[i] = bary_mmuot_cost[t][f'debias_{i}']
+                    bary_mmuot_spread = (bary_mmuot_cost[t]['bias'] - 1/(len(members)+1) * temp0.sum()).item()
+
+                    bary_se_spread = se_costs[k][0]['total_cost']
+                    se_biased_cost = sum(se_costs[k][0]['unbalanced_sinkhorn_terms'])
+
+                    barycentre = bary_output[k]
+
+                    # img = axes[j].imshow(barycentre.reshape(200,  200).detach().cpu().numpy(), extent=[0, 1, 0, 1], origin="lower", cmap="Greys")
+                    axes[j].set_facecolor("#f9f6f1")
+                    bary = barycentre.reshape(200,  200).detach().cpu().numpy()
+                    img = axes[j].pcolormesh(
+                        X[:, :, 0],
+                        X[:, :, 1],
+                        np.ma.masked_where(bary <= 1e-12, bary),
+                        # cmap='Greys',
+                        cmap='Blues',
+                        shading='auto'
+                    )
+                    plt.colorbar(img, ax=axes[j], label='Barycentre Density')  # Add colorbar for the barycentre
+
+                    # add support contour
+                    mask = ensemble_mean>0
+                    axes[j].contour(
+                        X[:, :, 0],
+                        X[:, :, 1],
+                        mask.astype(int),    
+                        levels=[0.5],
+                        # colors='blue',
+                        colors='#b98224',
+                        linestyles='dashdot',
+                        linewidths=2,
+                    )
+                    axes[j].set_title(f"mass ratio: {barycentre.sum().item()/obs_mass:.4g} obs skill: {obs_skill:.4g}, mmuot spread: {bary_mmuot_spread:.4g}, \n se spread: {bary_se_spread:.4g}, se biased cost: {se_biased_cost:.4g}", fontsize=12)
+
+            ax[0, 0].set_ylabel("Debiased", rotation=90, fontsize=20, fontweight='bold')
+            ax[1, 0].set_ylabel("Biased", rotation=90, fontsize=20, fontweight='bold')
+
+            column_headers = ['rho: 1.0, kl', 'rho: 0.001, kl', 'rho: 1.0, tv', 'rho: 0.001, tv']
+
+            for col in range(4):
+                # Get the position of the top subplot in that column
+                pos = ax[0, col].get_position()
+                
+                # Place text slightly above it
+                fig.text(
+                    pos.x0 + pos.width / 2,
+                    pos.y1 + 0.02,
+                    column_headers[col],
+                    ha='center',
+                    va='bottom',
+                    fontsize=20,
+                    fontweight='bold'
+                )
+
+            try:
+                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_pov_time{t}_eps{str(epsilon)[2:]}.png', dpi=200)
+            # if not folder dataset exists, create it and save
+            except FileNotFoundError:
+                import os
+                os.makedirs(f'barycentre_grid_pov/{data_set}', exist_ok=True)
+                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_pov_time{t}_eps{str(epsilon)[2:]}.png')
+            plt.close('all')
+
+print("Done plotting!")
