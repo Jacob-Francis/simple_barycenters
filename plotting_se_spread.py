@@ -48,6 +48,11 @@ for data_set in data_sets:
     members = obvs_dict['members']
     M = len(members)
 
+    if 'weights' in obvs_dict:
+        weights = obvs_dict['weights']
+    else:   
+        weights = None
+
     for epsilon in epsilons:
         count = 0
 
@@ -106,6 +111,10 @@ for data_set in data_sets:
                     # barycentre cost - spread
                     se_spread[k] = se_costs[k][0]['total_cost']
                     # debiasing constants handelling within
+                    
+                    if weights is not None:
+                        print(f"TOCHECK: Using weights for time {t}: {weights[k]}")
+
                     if debiasing:
                         se_per_data = np.stack(se_costs[k][0]['unbalanced_sinkhorn_terms'])*M + se_costs[k][0]['debiasing_term'] - np.stack(se_costs[k][0]['uot_mu_mu_terms'])*M/2
                     else:

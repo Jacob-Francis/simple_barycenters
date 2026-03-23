@@ -64,6 +64,8 @@ for k, t in enumerate(times):
 # ----------------------------------------------------
 # plot
 # ----------------------------------------------------
+plt.rcParams.update({"font.size": 14})
+
 time_steps = np.arange(len(mu_e_list)) 
 mu_e = np.array(mu_e_list)
 sd_e = np.array(sd_e_list)
@@ -72,17 +74,41 @@ mu_s = np.array(mu_s_list)
 sd_s = np.array(st_s_list)
 
 # Create the figure
-fig, axes = plt.subplots(1, 2, figsize=(8,5))
+fig, axes = plt.subplots(1, 2, figsize=(9*2,8), dpi=200)
 
-# Plot with error bars
-axes[0].errorbar(time_steps, mu_e, yerr=sd_e, fmt='o-', label="Error", capsize=5)
-axes[0].errorbar(time_steps, mu_s, yerr=sd_s, fmt='s-', label="Spread", capsize=5)
+# Compute bounds
+lower_e = np.maximum(mu_e - sd_e, 0)
+upper_e = mu_e + sd_e
+
+lower_s = np.maximum(mu_s - sd_s, 0)
+upper_s = mu_s + sd_s
+
+# Mean lines
+line_e, = axes[0].plot(time_steps, mu_e, 'o-', label="Error", color=plt.cm.Blues(0.65))
+line_s, = axes[0].plot(time_steps, mu_s, 's-', label="Spread", color=plt.cm.copper(0.65))
+
+# Fiull
+axes[0].fill_between(
+    time_steps,
+    lower_e,
+    upper_e,
+    color=line_e.get_color(),
+    alpha=0.25
+)
+
+axes[0].fill_between(
+    time_steps,
+    lower_s,
+    upper_s,
+    color=line_s.get_color(),
+    alpha=0.25
+)
+
 axes[0].axhline(0)
 
-# Labels and legend
-axes[0].set_xlabel("Time Steps")
+axes[0].set_xlabel("t")
 axes[0].set_ylabel("Mean Value")
-axes[0].set_title("Mean with Standard Deviation (Error Bars)")
+axes[0].set_title("Mean ± SD")
 axes[0].legend()
 axes[0].grid(True)
 
@@ -94,6 +120,24 @@ axes[1].plot([0, max_val], [0, max_val], 'k--')
 axes[1].set_xlabel("Error")
 axes[1].set_ylabel("Spread")
 axes[1].grid(True)
+
+import matplotlib.ticker as ticker
+
+formatter = ticker.ScalarFormatter(useMathText=True)
+formatter.set_powerlimits((-2, 2))   # same as colorbar
+formatter.set_useOffset(False)
+
+# First subplot
+axes[0].yaxis.set_major_formatter(formatter)
+axes[0].xaxis.set_major_formatter(formatter)
+
+# Second subplot
+axes[1].yaxis.set_major_formatter(formatter)
+axes[1].xaxis.set_major_formatter(formatter)
+
+# Refresh ticks
+for ax in axes:
+    ax.ticklabel_format(style='sci', axis='both', scilimits=(-2, 2))
     
 plt.tight_layout()
 plt.savefig(snakemake.output[0])
