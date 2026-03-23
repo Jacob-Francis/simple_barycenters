@@ -47,18 +47,25 @@ times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
 
+if 'weights' in dictionary_in_time:
+    weights = dictionary_in_time['weights']
+else:
+    weights = None
+
 bary_list = []
 cost_list = []
 fig, ax = plt.subplots(1, 1, figsize=(8, 4))
 
-for t in times:
+for _, t in enumerate(times):
     data_bary_list = dictionary_in_time[t]['forecasts']
 
 
     data_processor = mmuot.generate_mmuotdataprocessor_star_graph(
         data_bary_list, 
         grid=grid,
-        cuda_device=f'cuda:{cuda}',)
+        cuda_device=f'cuda:{cuda}',
+        weights=weights[_] if weights is not None else None,
+        )
     
     data_processor, conlist = mmuot.mmuot_sinkhorn_loop(
         data_processor,

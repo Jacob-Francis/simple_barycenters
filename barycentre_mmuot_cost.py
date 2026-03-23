@@ -47,6 +47,11 @@ times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
 
+if 'weights' in dictionary_in_time:
+    weights = dictionary_in_time['weights']
+else:
+    weights = None
+
 cost_dict_over_time = {}
 
 time_series_debiased_costs = []
@@ -61,7 +66,8 @@ for k, t in enumerate(times):
     max_iterates=mmuot_max_iterations, 
     tol=mmuot_tol, 
     grid=grid, 
-    device=f'cuda:{cuda}'
+    device=f'cuda:{cuda}',
+    weights=weights[k] if weights is not None else None,
     )
 
     # calculate full cost

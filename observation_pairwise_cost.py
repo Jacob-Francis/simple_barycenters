@@ -61,11 +61,16 @@ times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
 
+if 'weights' in dictionary_in_time:
+    weights = dictionary_in_time['weights']
+else:    
+    weights = None
+
 bary_list = []
 cost_list = []
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
-for t in times:
+for _, t in enumerate(times):
     centre_data=dictionary_in_time[t]['observation']
     data_bary_list = dictionary_in_time[t]['forecasts']
     # Generate data holding class
@@ -73,13 +78,13 @@ for t in times:
         data_bary_list, 
         barycentre_grid=grid,
         grid=grid, 
-        weights=None, 
+        weights=weights[_] if weights is not None else None,
         cuda_device=f'cuda:{cuda}',
         potentials = 'f'
     )
 
     try:
-        data_processor, barycentre, potential_error_list, barycentre_error_list, constraint_dict = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -90,7 +95,7 @@ for t in times:
                 epsilon_annealing=False,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=True,
+                measure_constraints=False,
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
@@ -99,8 +104,16 @@ for t in times:
             )
         )
     except ValueError:
+        data_processor = pwb.generate_barycentredataprocessor(
+            data_bary_list, 
+            barycentre_grid=grid,
+            grid=grid, 
+            weights=weights[_] if weights is not None else None,
+            cuda_device=f'cuda:{cuda}',
+            potentials = 'f'
+        )
         print("7.5) Value Error trying annealing and more its ", )
-        data_processor, barycentre, potential_error_list, barycentre_error_list, constraint_dict = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -111,7 +124,7 @@ for t in times:
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=True,
+                measure_constraints=False,
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
@@ -119,12 +132,9 @@ for t in times:
                 fixed_barycentre=centre_data[0]
             )
         )
-
     
-    bary_list.append(barycentre)
-
     # cost calcualtion
-    _, _, se_dict = pwb.asymmetric_cost(
+    cc, _, se_dict = pwb.asymmetric_cost(
             data_processor,
             epsilon,
             rho,
@@ -136,11 +146,10 @@ for t in times:
 
         )
     
-    cost_list.append([se_dict, constraint_dict])
+    print('COST:', cc)
+    cost_list.append([se_dict])
 
     print('convergence check: ', potential_error_list[-1], barycentre_error_list[-1])
-    for keys in constraint_dict.keys():
-        print(f"constraint {keys} is {constraint_dict[keys][-1]}")
 
 with open(snakemake.output[0], "wb") as f:
     pickle.dump(cost_list, f)

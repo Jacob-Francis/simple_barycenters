@@ -45,11 +45,16 @@ times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
 
+if 'weights' in dictionary_in_time:
+    weights = dictionary_in_time['weights']
+else:
+    weights = None
+
 cost_dict_over_time = {}
 
 time_series_debiased_costs = []
 
-for t in times:
+for _, t in enumerate(times):
     cost, cost_dict = mmuot_general_costings(
     centre_data=dictionary_in_time[t]['observation'],
     leaf_data=dictionary_in_time[t]['forecasts'],
@@ -59,7 +64,8 @@ for t in times:
     max_iterates=mmuot_max_iterations, 
     tol=mmuot_tol, 
     grid=grid, 
-    device=f'cuda:{cuda}'
+    device=f'cuda:{cuda}',
+    weights=weights[_] if weights is not None else None,
     )
 
     # calculate full cost

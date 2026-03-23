@@ -59,24 +59,29 @@ times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
 
+if 'weights' in dictionary_in_time:
+    weights = dictionary_in_time['weights']
+else:
+    weights = None
+
 bary_list = []
 cost_list = []
-fig, ax = plt.subplots(1, 2, figsize=(8, 4))
+fig, ax = plt.subplots(1, 3, figsize=(4*3, 4))
 
-for t in times:
+for _, t in enumerate(times):
     data_bary_list = dictionary_in_time[t]['forecasts']
     # Generate data holding class
     data_processor = pwb.generate_barycentredataprocessor(
         data_bary_list, 
         barycentre_grid=grid,
         grid=grid, 
-        weights=None, 
+        weights=weights[_] if weights is not None else None,
         cuda_device=f'cuda:{cuda}',
         potentials = 'f'
     )
 
     try:
-        data_processor, barycentre, potential_error_list, barycentre_error_list, constraint_dict = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list, energy_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -87,16 +92,17 @@ for t in times:
                 epsilon_annealing=False,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=True,
+                measure_constraints=False,
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
-                }
+                },
+                energy_tracking=True
             )
         )
     except ValueError:
         print("7.5) Value Error trying annealing and more its ", )
-        data_processor, barycentre, potential_error_list, barycentre_error_list, constraint_dict = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list, energy_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -107,19 +113,21 @@ for t in times:
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=True,
+                measure_constraints=False,
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
-                }
+                },
+                energy_tracking=True
             )
         )
 
-    
+    # rescale 
+    barycentre = barycentre / np.prod(barycentre.shape)
     bary_list.append(barycentre)
 
     # cost calcualtion
-    _, _, se_dict = pwb.asymmetric_cost(
+    cc, _, se_dict = pwb.asymmetric_cost(
             data_processor,
             epsilon,
             rho,
@@ -129,7 +137,8 @@ for t in times:
             return_breakdown=True,
         )
     
-    cost_list.append([se_dict, constraint_dict])
+    print('COST:', cc)
+    cost_list.append([se_dict])
 
     # convergence checks
 
@@ -140,7 +149,11 @@ for t in times:
     ax[1].semilogy(potential_error_list, label=f"{t}")
     ax[1].set_xlabel("Outer Iteration")
     ax[1].set_ylabel("potential update change")
-    
+
+    ax[2].semilogy(energy_list['total_cost'], label=f"{t}")
+    ax[2].set_xlabel("Outer Iteration")
+    ax[2].set_ylabel("Energy")
+
 plt.savefig(snakemake.output[1])
 plt.clf()
 
@@ -150,7 +163,6 @@ with open(snakemake.output[0], "wb") as f:
 
 with open(snakemake.output[3], "wb") as f:
     pickle.dump(cost_list, f)
-
 
 # save the barycentres
 # -------------------------------------------
@@ -165,12 +177,16 @@ for k, t in enumerate(times):
 
     img = axes[k, 0].imshow(ensemble_mean.reshape(200,  200), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
     fig.colorbar(img, ax=axes[k, 0])
+    axes[k, 0].set_title(f"Ensemble mean, sum={ensemble_mean.sum():.2f}")
 
     img = axes[k, 1].imshow(dictionary_in_time[t]['observation'][0].reshape(200,  200), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
     fig.colorbar(img, ax=axes[k, 1])
+    axes[k, 1].set_title(f"Observation, sum={dictionary_in_time[t]['observation'][0].sum()/200**2:.2f}")
+
 
     img = axes[k, 2].imshow(bary_list[k].reshape(200,  200).detach().cpu().numpy(), extent=[0, 1, 0, 1], origin="lower", cmap="Greys", alpha=0.8)#, norm=LogNorm())
     fig.colorbar(img, ax=axes[k, 2])
+    axes[k, 2].set_title(f"Barycenter, sum={bary_list[k].sum():.2f}")
 
 plt.savefig(snakemake.output[2])
 

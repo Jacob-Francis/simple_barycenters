@@ -4,6 +4,8 @@ from utils import *
 import numpy as np
 import pickle
 import torch
+import matplotlib.ticker as ticker
+import matplotlib.colors as mcolors
 
 import os 
 
@@ -17,10 +19,11 @@ dictionary_in_time = {}
 
 rng = np.random.default_rng(seed=12345)
 
+################################### group 1 ###############################################
 
 if set_number == 1:
     # ---------------------------------------
-    # Set 1: Orientation and boundary
+    # Set 1: Relative boundary
     # ---------------------------------------
     count = 0
     # 1) generate circle at centre
@@ -60,6 +63,14 @@ if set_number == 1:
 
     count += 1
 
+    dictionary_in_time['times'] = [k for k in range(count)]
+
+elif set_number == 2:
+    # ---------------------------------------
+    # Set 2: Ellipse orenitation
+    # ---------------------------------------
+
+    count = 0
     #3) generatre ellipse at centre
     data_list = []
     for mem in members:
@@ -96,9 +107,35 @@ if set_number == 1:
 
     dictionary_in_time['times'] = [k for k in range(count)]
 
-elif set_number == 2:
+elif set_number == 3:
     # ---------------------------------------
-    # Set 2: Rotated ellipses
+    # Set 3: Two marginal rotation ellipse
+    # ---------------------------------------
+    times = [0, 1, 2, 3, 4]
+    members = [0, 1]
+    for t in times:
+        data_list = []
+
+        # mem1
+        F, X = generate_rotated_ellipse_ensemble(1, np.pi*t/16, path_to_data, seed_pert=rng.integers(0,int(1e7)), fixed_angle=np.pi/4+t*np.pi/16)
+        data_list.append([F, None])
+
+        # mem2
+        F, X = generate_rotated_ellipse_ensemble(2, np.pi*t/16, path_to_data, seed_pert=rng.integers(0,int(1e7)), fixed_angle=np.pi/4-t*np.pi/16)
+        data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_rotated_ellipse_ensemble(0, np.pi*t/16, path_to_data, seed_pert=rng.integers(0,int(1e7)), fixed_angle=np.pi/4)
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+
+elif set_number == 4:
+    # ---------------------------------------
+    # Set 2: Random rotation of ellipse
     # ---------------------------------------
     times = [0, 1, 2, 3, 4]
    
@@ -117,10 +154,10 @@ elif set_number == 2:
             forecasts = data_list
             )
     dictionary_in_time['times'] = times
-
-elif set_number == 3:
+################################### group 2 ###############################################
+elif set_number == 5:
     # ---------------------------------------
-    # Set 3: double penalty smaller envelope for generating random circle centres.
+    # Set 3: double penalty envelope for generating random circle centres.
     # ---------------------------------------
     times = [0, 20, 40, 60, 80, 100]
 
@@ -137,99 +174,17 @@ elif set_number == 3:
             )
     dictionary_in_time['times'] = times
 
-elif set_number == 4:
-    # ---------------------------------------
-    # Set 4: double penalty Larger envelope for generating random circle centres.
-    # ---------------------------------------
-    times = [0, 20, 40, 60, 80, 100]
-   
-    for t in times:
-        data_list = []
-        for mem in members:
-            O, F, X = generate_double_penalty_circle_ensemble(mem, t, 40, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-            data_list.append([F, None])
-
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-
-
-elif set_number == 5:
-    # ---------------------------------------
-    # Set 5: Cone section moving outwards 45 degree
-    # ---------------------------------------
-    times = [0, 20, 40, 60, 80, 100]
-    
-    for t in times:
-        data_list = []
-        for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-            data_list.append([F, None])
-        
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(45), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-
+################################### group 3 ###############################################
 
 elif set_number == 6:
     # ---------------------------------------
-    # Set 6: Cone section moving outwards 22.5 degree
-    # ---------------------------------------
-    times = [0, 20, 40, 60, 80, 100]
-    
-    for t in times:
-        data_list = []
-        for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-            data_list.append([F, None])
-        
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(22.5), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-
-elif set_number == 7:
-    # ---------------------------------------
-    # Set 7: Cone section moving outwards 90 degree
-    # ---------------------------------------
-
-    times = [0, 20, 40, 60, 80, 100]
-
-    for t in times:
-        data_list = []
-        for mem in members:
-            F, X = generate_cone_section_ensemble(mem, r1=t+10, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-
-            data_list.append([F, None])
-        
-        O, X = generate_cone_section_ensemble(0, r1=t+20, r0=t, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-
-    dictionary_in_time['times'] = times
-
-elif set_number == 8:
-    # ---------------------------------------
-    # Set 8: Barycentre off the support 
+    # Set 6: Barycentre off the support 
     # ---------------------------------------
     count = 0
 
     # 1) Anulus
     data_list = []
+    members = [k for k in range(18)]
     for mem in members:
         F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=0, path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
         F = np.roll(F, 50, axis=1) # roll back to centre
@@ -248,10 +203,13 @@ elif set_number == 8:
     data_list = []
     for mem in members:
         F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        F = np.roll(F, 50, axis=1) # roll back to centre
 
         data_list.append([F, None])
 
     O, X = generate_cone_section_ensemble(0, r1=60, r0=40, angle=np.deg2rad(90), path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
+    O = np.roll(O, 50, axis=1) # roll back to centre
+
     dictionary_in_time[count] = dict(
         observation = [O, None],
         forecasts = data_list
@@ -297,8 +255,9 @@ elif set_number == 8:
     count += 1 
 
     dictionary_in_time['times'] = [k for k in range(count)]
+################################### group 4 ###############################################
 
-elif set_number == 9:
+elif set_number == 7:
     # ---------------------------------------
     # Set 9: Clustering/bifurcation test
     # ---------------------------------------
@@ -332,7 +291,55 @@ elif set_number == 9:
             )
     dictionary_in_time['times'] = times
 
-elif set_number == 10:
+elif set_number == 8:
+    # ---------------------------------------
+    # Set 8: Clustering/bifurcation test; more members
+    # ---------------------------------------
+     # ---------------------------------------
+    # Set 9: Clustering/bifurcation test
+    # ---------------------------------------
+
+    # I should abstract this...
+    times = [0, 1, 2, 3, 4]
+    # whether to roll forward to backwards 50 
+    clusters = [50, -50, -50, -50, -50, -50, -50, -50, -50, -50]
+    weights = [1, 2, 3, 4, 5]
+    weights = [[w/10, 1-w/10] for w in weights]
+    
+    # Gather time series data
+    data_list = []
+    dictionary_in_time = {}
+    for t in times:
+        # for all times in the same pair but with different weights
+        data_list = []
+        # one in right
+        F, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        F = np.roll(F, 50, axis=1)
+
+        data_list.append([F, None])
+    
+        # one in left
+        F, X = generate_circle_ensemble(1, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        F = np.roll(F, -50, axis=1)
+
+        data_list.append([F, None])
+        
+        # Doesn't rly matter
+        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        O = np.roll(O, -50, axis=1)
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+    dictionary_in_time['weights'] = weights
+    members = [0, 1]
+
+    print('assigning weights')
+################################### group 5 ###############################################
+
+elif set_number == 9:
     # ---------------------------------------
     # Set 10: noise test
     # ---------------------------------------
@@ -350,8 +357,9 @@ elif set_number == 10:
             forecasts = data_list
             )
     dictionary_in_time['times'] = times
+################################### group 6 ###############################################
 
-elif set_number == 11:
+elif set_number == 10:
     # ---------------------------------------
     # Set 11: P1 and P2?
     # ---------------------------------------
@@ -373,32 +381,8 @@ elif set_number == 11:
             forecasts = data_list
             )
     dictionary_in_time['times'] = times
-
-elif set_number == 12:
-    # ---------------------------------------
-    # Set 12: Intensity bias, equal mass ==> spatial bias
-    # ---------------------------------------
-    times = [0, 5, 10, 15, 20, 25, 30]
-
-    for t in times:
-        data_list = []
-        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-        mass = O.sum()
-        for mem in members:
-            # rnage changed with t
-            dia_vals = np.arange(40-t, 40+t+1)
-            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(dia_vals))
-            F /= F.sum()
-            F *= mass
-            data_list.append([F, None])
-
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-
-elif set_number == 13:
+################################### group 7 ###############################################
+elif set_number == 11:
     # ---------------------------------------
     # Set 13: Spatial bias, circular cases for increasing spread (correct support)
     # ---------------------------------------
@@ -420,8 +404,7 @@ elif set_number == 13:
             )
     dictionary_in_time['times'] = times
 
-
-elif set_number == 14:
+elif set_number == 12:
     # ---------------------------------------
     # Set 14: Spatial bias, circular cases; all too small
     # ---------------------------------------
@@ -443,7 +426,7 @@ elif set_number == 14:
             )
     dictionary_in_time['times'] = times
 
-elif set_number == 15:
+elif set_number == 13:
     # ---------------------------------------
     # Set 15: Spatial bias, circular cases; all too large
     # ---------------------------------------
@@ -466,7 +449,7 @@ elif set_number == 15:
             )
     dictionary_in_time['times'] = times
 
-elif set_number == 16:
+elif set_number == 14:
     # ---------------------------------------
     # Set 16: Spatial bias, circular cases; random diameters
     # ---------------------------------------
@@ -488,9 +471,81 @@ elif set_number == 16:
             )
     dictionary_in_time['times'] = times
 
+############################ group 8 ###############################################
+elif set_number == 15:
+    # ---------------------------------------
+    # Set 12: Intensity bias, equal mass ==> spatial bias
+    # ---------------------------------------
+    times = [0, 2, 4, 8, 16, 32]
+
+    for t in times:
+        data_list = []
+        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        mass = O.sum()
+        for mem in members:
+            # rnage changed with t
+            dia_vals = np.arange(40-t, 40+t+1)
+            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(dia_vals))
+            F /= F.sum()
+            F *= mass
+            data_list.append([F, None])
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+elif set_number == 16:
+    # ---------------------------------------
+    # Set 12: Intensity bias, equal mass ==> spatial bias
+    # ---------------------------------------
+    times = [0, 2, 4, 8, 16, 32]
+
+    for t in times:
+        data_list = []
+        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        mass = O.sum()
+        for mem in members:
+            # rnage changed with t
+            dia_vals = np.arange(40, 40+t+1)
+            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(dia_vals))
+            F /= F.sum()
+            F *= mass
+            data_list.append([F, None])
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
 elif set_number == 17:
     # ---------------------------------------
-    # Set 17: intensity error; ellipsises with different heights
+    # Set 12: Intensity bias, equal mass ==> spatial bias
+    # ---------------------------------------
+    times = [0, 2, 4, 8, 16, 32]
+
+    for t in times:
+        data_list = []
+        O, X = generate_circle_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        mass = O.sum()
+        for mem in members:
+            # rnage changed with t
+            dia_vals = np.arange(40-t, 40+1)
+            F, X = generate_circle_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(dia_vals))
+            F /= F.sum()
+            F *= mass
+            data_list.append([F, None])
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+############################ group 9 ###############################################
+
+elif set_number == 18:
+    # ---------------------------------------
+    # Set 16: intensity error; ellipsises with different heights
     # ---------------------------------------
 
     times = [0, 1, 2, 3, 4, 5]
@@ -512,21 +567,23 @@ elif set_number == 17:
             )
     dictionary_in_time['times'] = times
 
-elif set_number == 18:
+elif set_number == 19:
     # ---------------------------------------
-    # Set 18: intensity error; two step ellipse in a circle
+    # Set 16: intensity error; ellipsises with different heights
     # ---------------------------------------
 
-    times = [0, 10, 20, 30, 40, 50]
-  
+    times = [0, 1, 2, 3, 4, 5]
+
     for t in times:
         data_list = []
+        amp_scale = [0, 0.05*t]
+
         for mem in members:
-            F, X = generate_intensity_errors_ensemble(mem, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
+            F, X = generate_ellipse_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_intensity_errors_ensemble(0, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
+        O, X = generate_ellipse_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
 
         dictionary_in_time[t] = dict(
             observation = [O, None],
@@ -534,8 +591,32 @@ elif set_number == 18:
             )
     dictionary_in_time['times'] = times
 
+elif set_number == 20:
+    # ---------------------------------------
+    # Set 16: intensity error; ellipsises with different heights
+    # ---------------------------------------
 
-elif set_number == 19:
+    times = [0, 1, 2, 3, 4, 5]
+
+    for t in times:
+        data_list = []
+        amp_scale = [-0.05*t, 0]
+
+        for mem in members:
+            F, X = generate_ellipse_ensemble(mem, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
+            data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_ellipse_ensemble(0, 0, path_to_data, seed_pert=rng.integers(0,int(1e7)), case='E1', amp_scale=amp_scale)
+
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+############################ group 10 ###############################################
+
+elif set_number == 21:
     # ---------------------------------------
     # Set 19: extreme event; IN observation
     # ---------------------------------------
@@ -560,7 +641,7 @@ elif set_number == 19:
     dictionary_in_time['times'] = times
 
 
-elif set_number == 20:
+elif set_number == 22:
     # ---------------------------------------
     # Set 20: extreme event; Not in observation
     # ---------------------------------------
@@ -583,16 +664,15 @@ elif set_number == 20:
             forecasts = data_list
             )
     dictionary_in_time['times'] = times
+############################ group 11 ###############################################
 
 
-elif set_number == 21:
+elif set_number == 23:
     # ---------------------------------------
     # Set 21: Multiscale ellipses with time evolution
     # ---------------------------------------
-
-
     # I should abstract this...
-    times = [0, 5, 10, 15, 20]
+    times = [0, 4,8,16,32]
     members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
 
@@ -603,60 +683,6 @@ elif set_number == 21:
         data_list = []
         for mem in members:
             F, X = generate_multiscale_ellipse_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-            data_list.append([F, None])
-        
-        # generate the observation too as a random perturbation
-        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-
-
-elif set_number == 22:
-    # ---------------------------------------
-    # Set 22: multiscale under spread : large error!
-    # ---------------------------------------
-
-    # I should abstract this...
-    times = [0, 5, 10, 15, 20]
-    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
-
-    # Gather time series data
-    data_list = []
-    dictionary_in_time = {}
-    for t in times:
-        data_list = []
-        for mem in members:
-            F, X = generate_multiscale_ellipse_ensemble(mem, t/2, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-            data_list.append([F, None])
-        
-        # generate the observation too as a random perturbation
-        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
-        dictionary_in_time[t] = dict(
-            observation = [O, None],
-            forecasts = data_list
-            )
-    dictionary_in_time['times'] = times
-elif set_number == 23:
-    # ---------------------------------------
-    # Set 23: multiscale under spread : larger error!
-    # ---------------------------------------
-
-    # I should abstract this...
-    times = [0, 5, 10, 15, 20]
-    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
-
-    # Gather time series data
-    data_list = []
-    dictionary_in_time = {}
-    for t in times:
-        data_list = []
-        for mem in members:
-            F, X = generate_multiscale_ellipse_ensemble(mem, t/3, path_to_data, seed_pert=rng.integers(0,int(1e7)))
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
@@ -669,11 +695,38 @@ elif set_number == 23:
 
 elif set_number == 24:
     # ---------------------------------------
+    # Set 23: multiscale under spread : larger error!
+    # ---------------------------------------
+
+    # I should abstract this...
+    times = [0,4,8,16,32]
+    members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
+
+    # Gather time series data
+    data_list = []
+    dictionary_in_time = {}
+    for t in times:
+        data_list = []
+        for mem in members:
+            F, X = generate_multiscale_ellipse_ensemble(mem, t/4, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+            data_list.append([F, None])
+        
+        # generate the observation too as a random perturbation
+        O, X = generate_multiscale_ellipse_ensemble(0, t, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        dictionary_in_time[t] = dict(
+            observation = [O, None],
+            forecasts = data_list
+            )
+    dictionary_in_time['times'] = times
+
+elif set_number == 25:
+    # ---------------------------------------
     # Set 24: multiscale over spread : larger spread!
     # ---------------------------------------
 
     # I should abstract this...
-    times = [0, 5, 10, 15, 20]
+    times = [0, 4,8,16,32]
     members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
 
@@ -687,7 +740,7 @@ elif set_number == 24:
             data_list.append([F, None])
         
         # generate the observation too as a random perturbation
-        O, X = generate_multiscale_ellipse_ensemble(0, t/2, path_to_data, seed_pert=rng.integers(0,int(1e7)))
+        O, X = generate_multiscale_ellipse_ensemble(0, t/4, path_to_data, seed_pert=rng.integers(0,int(1e7)))
         dictionary_in_time[t] = dict(
             observation = [O, None],
             forecasts = data_list
@@ -707,7 +760,8 @@ M = len(dictionary_in_time['members'])
 rows = (len(times)//4 + 1)
 cols = 4
 
-fig = plt.figure(figsize=(cols * 5, rows * 4))
+fig = plt.figure(figsize=(cols * 9, rows * 8), dpi=200)
+plt.rcParams.update({"font.size": 14})
 
 for t in times:
     obs = dictionary_in_time[t]['observation']
@@ -716,36 +770,75 @@ for t in times:
     ax.set_title(f't = {t}')
     ax.set_facecolor("#f9f6f1")
 
-
     im = ax.pcolormesh(
         X[:, :, 0],
         X[:, :, 1],
         np.ma.masked_where(forecasts_mean <= 0, forecasts_mean),
-        cmap='Blues',
+        cmap='copper_r',
         shading='auto'
     )
-    plt.colorbar(im, ax=ax, label='Forecast Mean')
+    cbar = plt.colorbar(im, ax=ax, label='Forecast Mean')
 
-    ax.contour(
-        X[:, :, 0],
-        X[:, :, 1],
-        obs[0],
-        levels=[np.unique(obs[0])[1]-1e-9] if len(np.unique(obs[0])) == 2 else [np.unique(obs[0])[1]-1e-9, np.unique(obs[0])[2]-1e-9],
-        # cmap='copper',
-        colors="#b98224",
-        linestyles='dashdot',
-        linewidths=2,
-    )
+    cbar.formatter = ticker.ScalarFormatter(useMathText=True)
+    cbar.formatter.set_powerlimits((-2, 2))  # switch to sci notation if very small/large
+    cbar.update_ticks()
+
+    try:
+        ax.contour(
+            X[:, :, 0],
+            X[:, :, 1],
+            obs[0],
+            levels=[np.unique(obs[0])[1]-1e-9] if len(np.unique(obs[0])) == 2 else [np.unique(obs[0])[1]-1e-9, np.unique(obs[0])[2]-1e-9],
+            # cmap='copper',
+            colors= mcolors.to_hex(plt.cm.Blues(0.65)), # #b98224
+            linestyles='dashdot',
+            linewidths=2,
+        )
+    except IndexError:
+        assert set_number == 10
+        ax.contour(
+            X[:, :, 0],
+            X[:, :, 1],
+            obs[0],
+            colors= mcolors.to_hex(plt.cm.Blues(0.65)), # #b98224
+            linestyles='dashdot',
+            linewidths=2,
+        )
 
 plt.savefig(snakemake.output[1])
 
-# make arrays contigous
+# make arrays contigous and scale so that \int \mu d\L ~ 1
 for t in times:
     obs = dictionary_in_time[t]['observation']
-    obs[0] = np.ascontiguousarray(obs[0])
+    obs[0] = np.ascontiguousarray(obs[0]*200**2)
     forecasts = dictionary_in_time[t]['forecasts']
     for k in range(len(forecasts)):
-        forecasts[k][0] = np.ascontiguousarray(forecasts[k][0])
+        forecasts[k][0] = np.ascontiguousarray(forecasts[k][0]*200**2)
 
 with open(snakemake.output[0], 'wb') as f:
     pickle.dump(dictionary_in_time, f)
+
+
+
+
+# elif set_number == 18:
+#     # ---------------------------------------
+#     # Set 18: intensity error; two step ellipse in a circle
+#     # ---------------------------------------
+
+#     times = [0, 10, 20, 30, 40, 50]
+  
+#     for t in times:
+#         data_list = []
+#         for mem in members:
+#             F, X = generate_intensity_errors_ensemble(mem, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
+#             data_list.append([F, None])
+        
+#         # generate the observation too as a random perturbation
+#         O, X = generate_intensity_errors_ensemble(0, rng.normal(scale=0.05*t), 1*t//2, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=100)
+
+#         dictionary_in_time[t] = dict(
+#             observation = [O, None],
+#             forecasts = data_list
+#             )
+#     dictionary_in_time['times'] = times
