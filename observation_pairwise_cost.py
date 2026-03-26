@@ -1,5 +1,4 @@
 import torch
-from utils import mmuot_general_costings
 import pwbarycentres as pwb
 import pickle
 import matplotlib.pyplot as plt
@@ -83,6 +82,11 @@ for _, t in enumerate(times):
         potentials = 'f'
     )
 
+    # checking sums
+    # for node in data_processor.graph.nodes:
+    #     print(node, data_processor.data_dict[node]['density'].sum().item(), (data_processor.data_dict[node]['density']*data_processor.data_dict[node]['cell_areas']).sum().item())
+    # print('obs', centre_data[0].sum().item(), (centre_data[0]*data_processor.data_dict[node]['cell_areas'].cpu().numpy()).sum().item())
+    # assert 0
     try:
         data_processor, barycentre, potential_error_list, barycentre_error_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
@@ -119,7 +123,7 @@ for _, t in enumerate(times):
                 epsilon=epsilon,
                 rho=rho,
                 aprox=aprox_type,
-                max_iterates=mmuot_max_iterations*5,
+                max_iterates=mmuot_max_iterations,
                 tol=mmuot_tol,
                 epsilon_annealing=True,
                 debiasing=debiasing,
@@ -142,8 +146,8 @@ for _, t in enumerate(times):
             debiasing=debiasing,
             verbose=False,
             return_breakdown=True,
-            fixed_barycentre=centre_data[0]
-
+            fixed_barycentre=centre_data[0],
+            primal_costs=True,
         )
     
     print('COST:', cc)

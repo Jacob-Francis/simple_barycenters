@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 
 import os 
 
-members = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+members = [k for k in range(0, 50)] 
 path_to_data = '/home/jjf817/macomp001/jjf817/PhD_jobs/ICP_Cases/MescoVict_cases/'
 
 set_number = int(snakemake.wildcards['data_set'])
@@ -751,7 +751,12 @@ else:
     raise ValueError('Set number not recognised {}'.format(set_number))
 
 dictionary_in_time['members'] = members
-dictionary_in_time['grid'] = X
+L = 1
+N = 200
+dx = L/N
+dy = L/N
+# centred grid points
+dictionary_in_time['grid'] = (torch.linspace(dx/2, L-dx/2, N), torch.linspace(dy/2, L-dy/2, N))
 
 # - ---------------------------------------                         
 # Plot the density fields

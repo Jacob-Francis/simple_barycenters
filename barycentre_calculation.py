@@ -1,5 +1,4 @@
 import torch
-from utils import mmuot_general_costings
 import pwbarycentres as pwb
 import pickle
 import matplotlib.pyplot as plt
@@ -135,6 +134,7 @@ for _, t in enumerate(times):
             debiasing=debiasing,
             verbose=False,
             return_breakdown=True,
+            primal_costs=True,
         )
     
     print('COST:', cc)

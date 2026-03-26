@@ -9,19 +9,20 @@ from utils import calculate_true_spread_skill
 
 import sys
 
-# Get arguments after script name
-args = sys.argv[1:]
+# # Get arguments after script name
+# args = sys.argv[1:]
 
-# Convert to list of ints
-data_sets = list(map(int, args))
+# # Convert to list of ints
+# data_sets = list(map(int, args))
 
-print(data_sets)   # for testing
+# print(data_sets)   # for testing
 
 # should abstract times and members from global config
-debiasing = [True, False]
-epsilons = [0.005, 0.0005] #0.01,
+debiasing = [True]
+epsilons = [0.001] #0.01,
 rhos = [1.0, 0.001]
 aprox_types = ['kl', 'tv'] # 'balanced',
+data_sets = [k for k in range(1, 10)] + [k for k in range(11,25+1)] # 10 desn't run
 # data_sets = [21] # [1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 16, 18, 19, 20, 21]  # [ 2, 5, 7, 8,9,  17, 11]
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
@@ -56,10 +57,10 @@ for data_set in data_sets:
     for epsilon in epsilons:
         count = 0
 
-        fig, ax = plt.subplots(2, 4, figsize=(8*3, 5*3))
+        fig, ax = plt.subplots(2, 2, figsize=(4*3, 5*3))
 
         plt.rcParams.update({"font.size": 14})
-        for l, (debiasing, rho) in enumerate([(True, 1.0), (True, 0.001), (False, 1.0), (False, 0.001)]):
+        for l, (debiasing, rho) in enumerate([(True, 1.0), (True, 0.001)]):
             max_val = float('-inf')
             min_val = float('inf')
             for aprox_type in aprox_types:
@@ -77,12 +78,6 @@ for data_set in data_sets:
 
                 with open(act_bary, 'rb') as f:
                     bary_output = pickle.load(f)
-
-                # with open(bary_file, 'rb') as f:
-                #     bary_mmuot_cost = pickle.load(f)
-
-                # with open(obs_file, 'rb') as f:
-                #     observation_costs = pickle.load(f)
                 
                 with open(cost_file, 'rb') as f:
                     se_costs = pickle.load(f)
@@ -95,18 +90,6 @@ for data_set in data_sets:
                 obs_se = np.zeros(len(times))
                 obs_se_decomp = np.zeros((M, len(times)))
 
-                # COST DICT STRUCTURE: ( i keep forgetting)
-                #         cost_dict= dict(
-                #     total_cost=full_cost,
-                #     unbalanced_sinkhorn_terms=us_e,
-                #     uot_mu_mu_terms=uot_mu_mu if debiasing else None,
-                #     debiasing_term=debiasing_term.item() if debiasing else None,
-                #     epsilon=epsilon.item(),
-                #     rho=rho.item(),
-                #     aprox=aprox,
-                #     debiasing=debiasing
-                # )
-
                 for k, t in enumerate(times):
                     # barycentre cost - spread
                     se_spread[k] = se_costs[k][0]['total_cost']
@@ -114,21 +97,25 @@ for data_set in data_sets:
                     
                     if weights is not None:
                         print(f"TOCHECK: Using weights for time {t}: {weights[k]}")
+                        w = np.array([1/we for we in weights[k]]) # to rescale back up
+                    else:
+                        w = np.ones(M) * M  # uniform weights if not provided
 
                     if debiasing:
-                        se_per_data = np.stack(se_costs[k][0]['unbalanced_sinkhorn_terms'])*M + se_costs[k][0]['debiasing_term'] - np.stack(se_costs[k][0]['uot_mu_mu_terms'])*M/2
+                        se_per_data = np.stack(se_costs[k][0]['unbalanced_sinkhorn_terms'])*w + se_costs[k][0]['debiasing_term'] - np.stack(se_costs[k][0]['uot_mu_mu_terms'])*w/2
                     else:
-                        se_per_data = np.stack(se_costs[k][0]['unbalanced_sinkhorn_terms'])*M
+                        se_per_data = np.stack(se_costs[k][0]['unbalanced_sinkhorn_terms'])*w
                     se_spread_decomp[:, k] = se_per_data
 
                     # observation cost - error
                     if debiasing:
-                        se_per_data = np.stack(obs_se_costs[k][0]['unbalanced_sinkhorn_terms'])*M + obs_se_costs[k][0]['debiasing_term'] - np.stack(obs_se_costs[k][0]['uot_mu_mu_terms'])*M/2
+                        se_per_data = np.stack(obs_se_costs[k][0]['unbalanced_sinkhorn_terms'])*w + obs_se_costs[k][0]['debiasing_term'] - np.stack(obs_se_costs[k][0]['uot_mu_mu_terms'])*w/2
                     else:
-                        se_per_data = np.stack(obs_se_costs[k][0]['unbalanced_sinkhorn_terms'])*M
-                    
-                    if debiasing:
-                        print(obs_se_costs[k][0])
+                        se_per_data = np.stack(obs_se_costs[k][0]['unbalanced_sinkhorn_terms'])*w
+
+                    print(obs_se_costs[k][0].keys())
+
+                    assert 0
 
                     obs_se[k] = obs_se_costs[k][0]['total_cost']
                     obs_se_decomp[:, k] = se_per_data
@@ -177,16 +164,16 @@ for data_set in data_sets:
                             marker='x',
                             color='grey',
                             label='true spread-skill')
-            ax_overlay.plot([min_val, max_val], [min_val, max_val], '--',
-                            color='grey',
-                            )
+            # ax_overlay.plot([min_val, max_val], [min_val, max_val], '--',
+            #                 color='grey',
+            #                 )
     
         ax[0, 0].set_ylabel("Scores", rotation=90, fontsize=20, fontweight='bold')
         ax[1, 0].set_ylabel("Spread-Skill", rotation=90, fontsize=20, fontweight='bold')
 
-        column_headers = ['Debiased, rho: 1.0', 'Debiased, rho: 0.001', 'Biased, rho: 1.0', 'Biased, rho: 0.001']
+        column_headers = ['Debiased, rho: 1.0', 'Debiased, rho: 0.001']
 
-        for col in range(4):
+        for col in range(2):
             # Get the position of the top subplot in that column
             pos = ax[0, col].get_position()
             
@@ -202,33 +189,59 @@ for data_set in data_sets:
             )
         
         legend_elements = [
-            # ---- Cost types (colour + linestyle) ----
-            Line2D([0], [0], color=cost_colours['spread'], linestyle='--', lw=4, label='Spread'),
-            Line2D([0], [0], color=cost_colours['skill'], linestyle='-.', lw=4, label='Error'),
-            Line2D([0], [0], color=cost_colours['se_cost'], linestyle=':', lw=4, label='SE Spread'),
-            Line2D([0], [0], color=cost_colours['se_cost_bias'], linestyle='-', lw=4, label='SE Bias cost'),
+            # ---- Mean curves (large markers) ----
+            Line2D([0], [0],
+                color=cost_colours['spread'], linestyle='--',
+                marker='o', markersize=10,
+                label='Spread (mean)'
+            ),
+            Line2D([0], [0],
+                color=cost_colours['skill'], linestyle='-.',
+                marker='o', markersize=10,
+                label='Error (mean)'
+            ),
 
-            # ---- Divergence type (marker only) ----
-            Line2D([0], [0], marker=markers['kl'], color='black',
+            # ---- Individual members (faded small markers) ----
+            Line2D([0], [0],
+                color=cost_colours['spread'], linestyle='',
+                marker='o', markersize=6,
+                alpha=0.4,
+                label='Spread (per member)'
+            ),
+            Line2D([0], [0],
+                color=cost_colours['skill'], linestyle='',
+                marker='o', markersize=6,
+                alpha=0.4,
+                label='Error (per member)'
+            ),
+
+            # ---- Divergence marker meaning ----
+            Line2D([0], [0],
+                marker=markers['kl'], color='black',
                 linestyle='none', markersize=12,
-                markerfacecolor='black', label='KL'),
-
-            Line2D([0], [0], marker=markers['tv'], color='black',
+                markerfacecolor='black',
+                label='KL'
+            ),
+            Line2D([0], [0],
+                marker=markers['tv'], color='black',
                 linestyle='none', markersize=12,
-                markerfacecolor='none', label='TV'),
+                markerfacecolor='none',
+                label='TV'
+            ),
 
-            Line2D([0], [0], marker='x', color='grey',
-                linestyle=':', markersize=12,
-                markerfacecolor='none', label='True Spread-Skill'),
+            # ---- spread-skill diagonal ----
+            Line2D([0], [0],
+                color='black', linestyle='--',
+                label='Ideal spread = error'
+            ),
         ]
 
         fig.legend(
             handles=legend_elements,
             loc='lower center',
-            ncol=7,
+            ncol=4,
             frameon=False,
-            # fontsize=14,
-            bbox_to_anchor=(0.5, 0.05)
+            bbox_to_anchor=(0.5, 0.00)
         )
 
 

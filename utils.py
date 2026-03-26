@@ -135,7 +135,7 @@ def generate_circle_ensemble(member, r, path_to_data, seed_pert=1, diameter=None
         'C1', 'C1', path_to_data=path_to_data
     )
     if diameter is not None:
-        centre = [100, 100]
+        centre = [99, 99]
         X_precipitation *= 0  # reset to zero
         for i,j in np.ndindex(X_precipitation.shape):
             if (i - centre[0])**2 + (j - centre[1])**2 <= (diameter/2)**2:
@@ -368,7 +368,7 @@ def generate_double_penalty_circle_ensemble_with_noise(member, t, r, noise, path
         idx = rng_state.choice(N, size=1, replace=False)
         if X_precipitation.flat[idx] == 0:
             X_precipitation.flat[idx] = max_val
-            k -= 1
+        k -= 1
 
     return Y_precipitation,  X_precipitation, X_coordinates
 
@@ -429,19 +429,37 @@ def ellipse_mask(center, axes, angle, shape=(200,200)):
 
     return ellipse.T
 
-def random_circluar_pert(X, r, rng_state):
-    # I should pass on a random number generator
+def random_circular_pert(X, r, rng_state):
+
     dx = r + 1
     dy = r + 1
+
     while dx**2 + dy**2 > r**2:
-            dx = rng_state.randint(-r, r+1, size=1) 
-            dy = rng_state.randint(-r, r+1, size=1) 
+        dx = rng_state.randint(-r, r+1)
+        dy = rng_state.randint(-r, r+1)
 
-    X = np.roll(X, dx, axis=1)
-    X = np.roll(X, dy, axis=0)
-    return X
+    H, W = X.shape
+    Y = np.zeros_like(X)
 
-def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1):
+    # Slice X wihich is valid and not moved out of the domain
+    src_x0 = max(0, -dx)
+    src_x1 = min(W, W - dx)
+
+    src_y0 = max(0, -dy)
+    src_y1 = min(H, H - dy)
+
+    dst_x0 = max(0, dx)
+    dst_x1 = min(W, W + dx)
+
+    dst_y0 = max(0, dy)
+    dst_y1 = min(H, H + dy)
+
+    Y[dst_y0:dst_y1, dst_x0:dst_x1] = \
+        X[src_y0:src_y1, src_x0:src_x1]
+
+    return Y
+
+def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1, fixed_angle=None):
     # same mass but different rotations
     rng_state = np.random.RandomState(int(member + angle_r**2)*5678 + seed_pert)
 
@@ -452,8 +470,9 @@ def generate_rotated_ellipse_ensemble(member, angle_r, path_to_data, seed_pert=1
     X_precipitation = ellipse_mask(
         center=(100, 100),
         axes=(100,20),
-        angle= np.pi/4 + rng_state.uniform(-angle_r, angle_r)
+        angle= np.pi/4 + rng_state.uniform(-angle_r, angle_r) if fixed_angle is None else fixed_angle
         )
+
     # scale back
     X_precipitation /= 1873.5
 
@@ -495,7 +514,9 @@ def generate_multiscale_ellipse_ensemble(member, r, path_to_data, seed_pert=1):
     # sum and perturb
     X_precipitation *= 0  # reset to zero
     for ellipse in fields:
-        X_precipitation += random_circluar_pert(ellipse, r, rng_state)
+        # union rather than double counting
+        pert = random_circular_pert(ellipse, r, rng_state)
+        X_precipitation = np.maximum(X_precipitation, pert)
 
     # cap at one so that overlaps are flattened not increased intensity
     # scale back to mass 1
@@ -654,7 +675,8 @@ def mmuot_general_costings(
     max_iterates, 
     tol, 
     grid, 
-    device='cuda:0'
+    device='cuda:0',
+    weights=None
     ):
 
     cost_dict = {}
@@ -662,7 +684,7 @@ def mmuot_general_costings(
     t0 = process_time()
     data_list = [centre_data] + leaf_data
     dp_for_mmuot_bary = generate_mmuotdataprocessor_star_graph(
-        data_list, grid=grid, weights=None, cuda_device=device, clear_grid=True
+        data_list, grid=grid, weights=weights, cuda_device=device, clear_grid=True
     )
 
     dp_for_mmuot_bary, conv_list_bary = mmuot_sinkhorn_loop(
@@ -758,13 +780,15 @@ def calculate_true_spread_skill(data_set_path):
         for mem in members:
             ensemble_mean_l2 += dictionary_in_time[t]['forecasts'][mem][0]
         ensemble_mean_l2 /= size
+        ensemble_mean_l2 /= 200**2
         ensemble_mean_list.append(ensemble_mean_l2)
 
     for k, t in enumerate(times):
         ensemble_mean_l2 = ensemble_mean_list[k]
-        mu_e, sd_e = summary_ensemble_mean_error(ensemble_mean_l2, dictionary_in_time[t]['observation'][0])
-        ensemble_members = [dictionary_in_time[t]['forecasts'][mem][0] for mem in members]
+        mu_e, sd_e = summary_ensemble_mean_error(ensemble_mean_l2, dictionary_in_time[t]['observation'][0]/200**2)
+        ensemble_members = [dictionary_in_time[t]['forecasts'][mem][0] /200**2 for mem in members]
         mu_s, st_s = summary_spread(ensemble_members, ensemble_mean_l2)
+
         mu_e_list.append(mu_e.item())
         sd_e_list.append(sd_e.item())
         mu_s_list.append(mu_s.item())
