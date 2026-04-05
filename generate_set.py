@@ -184,7 +184,6 @@ elif set_number == 6:
 
     # 1) Anulus
     data_list = []
-    members = [k for k in range(18)]
     for mem in members:
         F, X = generate_cone_section_ensemble(mem, r1=60, r0=40, angle=0, path_to_data=path_to_data, seed_pert=rng.integers(0,int(1e7)))
         F = np.roll(F, 50, axis=1) # roll back to centre
@@ -272,7 +271,7 @@ elif set_number == 7:
     dictionary_in_time = {}
     for t in times:
         data_list = []
-        for k, mem in enumerate(members):
+        for k, mem in enumerate(len(clusters)):
             cluster = clusters[k]
             F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
             F = np.roll(F, cluster, axis=1)
@@ -343,12 +342,12 @@ elif set_number == 9:
     # ---------------------------------------
     # Set 10: noise test
     # ---------------------------------------
-    times = [1, 2, 4, 8]
+    times = [0, 1, 2, 4, 8]
 
     for t in times:
         data_list = []
         for mem in members:
-            O, F, X = generate_double_penalty_circle_ensemble_with_noise(mem, 80, 20, 0.01*t, path_to_data)
+            O, F, X = generate_double_penalty_circle_ensemble_with_noise(mem, 80, 20, 0.001*t, path_to_data)
 
             data_list.append([F, None])
 

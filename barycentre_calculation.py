@@ -33,6 +33,7 @@ with open("global_config.yaml") as f:
 
 globals().update(global_config)
 tol = float(tol)
+zero_tol = float(zero_tol)
 
 # pick cuda device
 best_gpu = None
@@ -80,7 +81,7 @@ for _, t in enumerate(times):
     )
 
     try:
-        data_processor, barycentre, potential_error_list, barycentre_error_list, energy_list = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list, constriants, energy_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -91,17 +92,19 @@ for _, t in enumerate(times):
                 epsilon_annealing=False,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=False,
+                measure_constraints=True,
+                termination_criterion='constraint',
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
                 },
-                energy_tracking=True
+                energy_tracking=True,
+                zero_tol=zero_tol,
             )
         )
     except ValueError:
         print("7.5) Value Error trying annealing and more its ", )
-        data_processor, barycentre, potential_error_list, barycentre_error_list, energy_list = (
+        data_processor, barycentre, potential_error_list, barycentre_error_list, constriants, energy_list = (
             pwb.asymmetric_sinkhorn_log_algorithm(
                 data_processor,
                 epsilon=epsilon,
@@ -112,14 +115,20 @@ for _, t in enumerate(times):
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
-                measure_constraints=False,
+                measure_constraints=True,
+                termination_criterion='constraint',
                 lags={
                     'barycentre': 1,
                     'debiasing': 1,
                 },
-                energy_tracking=True
+                energy_tracking=True,
+                zero_tol=1e-20,
             )
         )
+
+    # constraint check
+    for key, value in constriants.items():
+        print(f"Constraint {key}: {value[-1]}")
 
     # rescale 
     barycentre = barycentre / np.prod(barycentre.shape)
@@ -134,7 +143,7 @@ for _, t in enumerate(times):
             debiasing=debiasing,
             verbose=False,
             return_breakdown=True,
-            primal_costs=True,
+            primal_cost=True,
         )
     
     print('COST:', cc)

@@ -22,7 +22,7 @@ debiasing = [True]
 epsilons = [0.001] #0.01,
 rhos = [1.0, 0.001]
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [k for k in range(1, 10)] + [k for k in range(11,25+1)] # 10 desn't run
+data_sets = [k for k in range(1, 10)] + [k for k in range(11,25+1)] # 10 desn't run 7?
 # data_sets = [21] # [1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 16, 18, 19, 20, 21]  # [ 2, 5, 7, 8,9,  17, 11]
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
@@ -57,10 +57,14 @@ for data_set in data_sets:
     for epsilon in epsilons:
         count = 0
 
+        # main spread-skill figure
         fig, ax = plt.subplots(2, 2, figsize=(4*3, 5*3))
 
         plt.rcParams.update({"font.size": 14})
         for l, (debiasing, rho) in enumerate([(True, 1.0), (True, 0.001)]):
+            # decomposition plot
+            fig_decomp, ax_decomp = plt.subplots(2, 2, figsize=(4*3, 5*3))
+
             max_val = float('-inf')
             min_val = float('inf')
             for aprox_type in aprox_types:
@@ -89,6 +93,27 @@ for data_set in data_sets:
                 se_spread_decomp = np.zeros((M, len(times)))
                 obs_se = np.zeros(len(times))
                 obs_se_decomp = np.zeros((M, len(times)))
+                
+                # Consistuent_terms
+                obs_dict = {
+                    'transport_cost': np.zeros((M, len(times)), dtype=np.float64),
+                    'marginal_penalty': np.zeros((M, len(times)), dtype=np.float64),
+                }
+                
+                bary_dict = {
+                    'transport_cost': np.zeros((M, len(times)), dtype=np.float64),
+                    'marginal_penalty': np.zeros((M, len(times)), dtype=np.float64),
+                }
+                
+                def gathering_costs(costs, dict_to_fill, t):
+                    # print(obs_se_costs[k][0]['subbreakdown'][(0, 1)].keys())
+                    #dict_keys(['dual_term1', 'dual_term2', 'dual_term3', 'dual_term4', 'primal_c_pi', 'primal_divergence_term', 'primal_entropy', 'uot_mu_mu', 'weight'])
+                    for i, node_keys in enumerate(costs['subbreakdown'].keys()):
+                        if isinstance(node_keys, tuple):
+                            node_dict = costs['subbreakdown'][node_keys]
+                            dict_to_fill['transport_cost'][i, t] = node_dict['primal_c_pi']
+                            dict_to_fill['marginal_penalty'][i, t] = node_dict['primal_divergence_term']
+
 
                 for k, t in enumerate(times):
                     # barycentre cost - spread
@@ -113,12 +138,17 @@ for data_set in data_sets:
                     else:
                         se_per_data = np.stack(obs_se_costs[k][0]['unbalanced_sinkhorn_terms'])*w
 
-                    print(obs_se_costs[k][0].keys())
-
-                    assert 0
+                    # print(obs_se_costs[k][0]['subbreakdown'][(0, 1)].keys())
+                    # # dict_keys(['total_cost', 'unbalanced_sinkhorn_terms', 'uot_mu_mu_terms', 'debiasing_term', 'epsilon', 'rho', 'aprox', 'debiasing', 'subbreakdown'])
+                    # #dict_keys(['dual_term1', 'dual_term2', 'dual_term3', 'dual_term4', 'primal_c_pi', 'primal_divergence_term', 'primal_entropy', 'uot_mu_mu', 'weight'])
+                    # assert 0
 
                     obs_se[k] = obs_se_costs[k][0]['total_cost']
                     obs_se_decomp[:, k] = se_per_data
+
+                    # fill dicts
+                    gathering_costs(obs_se_costs[k][0], obs_dict, k)
+                    gathering_costs(se_costs[k][0], bary_dict, k)
 
                     # mass ratio
                     barycentre = bary_output[k]
@@ -128,14 +158,26 @@ for data_set in data_sets:
                 max_val = max(max_val, max(obs_se.max(), se_spread.max()))
                 min_val = min(min_val, min(obs_se.min(), se_spread.min()))
 
-                ax[0, l].plot(times, se_spread, '--', marker=markers[aprox_type], markersize=10, label='spread', color=cost_colours['spread'])
-                ax[0, l].plot(times, obs_se, '-.', marker=markers[aprox_type], markersize=10, label='error', color=cost_colours['skill'])  
-                ax[0, l].plot(times, se_spread_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['spread'], alpha=0.5)
-                ax[0, l].plot(times, obs_se_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['skill'], alpha=0.5)
+                # zero check
+                for values in [se_spread, obs_se,  se_spread_decomp, obs_se_decomp]:
+                    if np.any(values <= 0):
+                        print(f"Warning: Found zero or negative values in {aprox_type} at time {t}. This may affect log-scale plotting. {np.mean(values[values <= 0])}")
+
+                ax[0, l].semilogy(times, se_spread, '--', marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='spread', color=cost_colours['spread'])
+                ax[0, l].semilogy(times, obs_se, '-.', marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='error', color=cost_colours['skill'])  
+                ax[0, l].semilogy(times, se_spread_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['spread'], alpha=0.5)
+                ax[0, l].semilogy(times, obs_se_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['skill'], alpha=0.5)
                 ax[0,l].set_title(f"Av. mass ratio: {mass_ratio.mean():.4g}", fontsize=16)
 
                 ax[1, l].plot(se_spread, obs_se, 'k--', marker=markers[aprox_type], label=f'aprox={aprox_type}')
                 ax[1,l].set_title(f"rho: {rho}, debiasing: {debiasing}", fontsize=16)
+
+                # plot as simple points per time first
+                ax_decomp[0, 0].plot(times, obs_dict['transport_cost'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} obs transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[0, 1].plot(times, obs_dict['marginal_penalty'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} obs marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 0].plot(times, bary_dict['transport_cost'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} bary transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 1].plot(times, bary_dict['marginal_penalty'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} bary marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+
 
             # linear fit with max min
             ax[1, l].plot([min_val, max_val], [min_val, max_val], 'k--', label='linear trend', alpha=0.5)
@@ -164,9 +206,18 @@ for data_set in data_sets:
                             marker='x',
                             color='grey',
                             label='true spread-skill')
-            # ax_overlay.plot([min_val, max_val], [min_val, max_val], '--',
-            #                 color='grey',
-            #                 )
+            
+            # save for different rho
+            for i in range(2):
+                for j in range(2):
+                    ax_decomp[i, j].set_xlabel('Time', fontsize=14)
+                    ax_decomp[i, j].set_ylabel('Cost', fontsize=14)
+                    ax_decomp[i, j].legend()
+
+            fig_decomp.suptitle(f"Cost Decomposition for dataset {data_set}, epsilon {epsilon}, rho {rho}", fontsize=16, fontweight='bold')
+            fig_decomp.tight_layout(rect=[0, 0.03, 1, 0.95])
+            fig_decomp.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_decomp_eps{str(epsilon)[2:]}_rho{rho}.png', dpi=200)
+
     
         ax[0, 0].set_ylabel("Scores", rotation=90, fontsize=20, fontweight='bold')
         ax[1, 0].set_ylabel("Spread-Skill", rotation=90, fontsize=20, fontweight='bold')
@@ -246,10 +297,11 @@ for data_set in data_sets:
 
 
         try:
-            plt.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
+            fig.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
         # if not folder dataset exists, create it and save
         except FileNotFoundError:
             import os
             os.makedirs(f'spread_curves/{data_set}', exist_ok=True)
-            plt.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
+            fig.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
+        
         plt.close('all')

@@ -40,13 +40,15 @@ for data_set in data_sets:
         dataset = pickle.load(f)
     times = dataset['times']
     members = dataset['members']
-    X = dataset['grid']
+    X = torch.meshgrid(*dataset['grid'], indexing='ij')
+    X = torch.stack(X, dim=-1)
 
     for k,t in enumerate(times):
         print(f"Time: {t}")
         obs_mass = sum(dataset[t]['observation'][0].flatten())/200**2
         # ensemble mean
         ensemble_mean = np.mean([f[0] for f in dataset[t]['forecasts']], axis=0)
+        print('Number members', len(dataset[t]['forecasts']))
         for epsilon in epsilons:
             count = 0
             fig, ax = plt.subplots(1, 4, figsize=(8*4, 5))

@@ -34,6 +34,7 @@ with open("global_config.yaml") as f:
 globals().update(global_config)
 tol = float(tol)
 mmuot_tol = float(mmuot_tol)
+zero_tol = float(zero_tol)
 
 # pick cuda device
 best_gpu = None
@@ -104,7 +105,8 @@ for _, t in enumerate(times):
                     'barycentre': 1,
                     'debiasing': 1,
                 },
-                fixed_barycentre=centre_data[0]
+                fixed_barycentre=centre_data[0],
+                zero_tol=zero_tol,
             )
         )
     except ValueError:
@@ -133,7 +135,8 @@ for _, t in enumerate(times):
                     'barycentre': 1,
                     'debiasing': 1,
                 },
-                fixed_barycentre=centre_data[0]
+                fixed_barycentre=centre_data[0],
+                zero_tol=1e-20
             )
         )
     
@@ -147,7 +150,8 @@ for _, t in enumerate(times):
             verbose=False,
             return_breakdown=True,
             fixed_barycentre=centre_data[0],
-            primal_costs=True,
+            primal_cost=True,
+            sym_tol=mmuot_tol,
         )
     
     print('COST:', cc)

@@ -1,21 +1,20 @@
-debiasing = [False, True]
-epsilon = [0.005, 0.0005] #0.01,
-rho = [1.0, 0.001]
-aprox_type = ['kl', 'tv'] # 'balanced', 'kl',  'kl', 
-# CUT set 5, 6, 7, 18
-data_sets = [1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] # 7, 18 19,
+debiasing = [True] # False
+epsilon = [0.001] # 0.005, 
+rho = [10.0, 1.0, 0.01, 0.001]
+aprox_type = ['kl', 'tv'] 
+data_sets = [1, 2, 3] # [k for k in range(1,10)] + [k for k in range(11,25+1)] # 10 desn't run
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 rule all:
     input:
         expand(ROOT_FILE+"ensemble_data/ensemble_dataset_{data_set}.pkl", data_set=data_sets),
         expand(ROOT_FILE+"ensemble_data/true_skill_scores_{data_set}.png", data_set=data_sets),
-        expand(ROOT_FILE+"pkl/{data_set}/observation_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}.pkl",
-               epsilon=epsilon,
-               rho=rho,
-               aprox_type=aprox_type,
-               data_set=data_sets
-               ),
+        # expand(ROOT_FILE+"pkl/{data_set}/observation_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}.pkl",
+        #        epsilon=epsilon,
+        #        rho=rho,
+        #        aprox_type=aprox_type,
+        #        data_set=data_sets
+        #        ),
         expand(ROOT_FILE+"pkl/{data_set}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
                debiasing=debiasing,
                epsilon=epsilon,
@@ -28,18 +27,18 @@ rule all:
                rho=rho,
                aprox_type=aprox_type,
                data_set=data_sets),
-        expand(ROOT_FILE+"pkl/{data_set}/mmuotbary_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
-                debiasing=debiasing,
-                epsilon=epsilon,
-                rho=rho,
-                aprox_type=aprox_type,
-                data_set=data_sets),
-        expand(ROOT_FILE+"pkl/{data_set}/barycentre_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
-               debiasing=debiasing,
-               epsilon=epsilon,
-               rho=rho,
-               aprox_type=aprox_type,
-               data_set=data_sets),
+        # expand(ROOT_FILE+"pkl/{data_set}/mmuotbary_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
+        #         debiasing=debiasing,
+        #         epsilon=epsilon,
+        #         rho=rho,
+        #         aprox_type=aprox_type,
+        #         data_set=data_sets),
+        # expand(ROOT_FILE+"pkl/{data_set}/barycentre_mmuot_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
+        #        debiasing=debiasing,
+        #        epsilon=epsilon,
+        #        rho=rho,
+        #        aprox_type=aprox_type,
+        #        data_set=data_sets),
         expand(ROOT_FILE+"pkl/{data_set}/observation_cost_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl",
                debiasing=debiasing,
                epsilon=epsilon,
