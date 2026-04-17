@@ -21,7 +21,7 @@ data_sets = list(map(int, args))
 # should abstract times and members from global config
 epsilons = [0.001] #, 0.0005] #0.01,
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [k for k in range(1, 10)] + [k for k in range(11,25+1)] # 10 desn't run
+data_sets = [k for k in range(1, 10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run, 12, 13, 14
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 ###################################### plotting rho : 1.0 ,0.001, kl and tv, debiased only ######################################
@@ -57,8 +57,8 @@ for data_set in data_sets:
 
             for l, debiasing in enumerate([True]):
                 axes = [ax[0], ax[1], ax[2], ax[3]]
-                # for j, (rho, aprox_type) in enumerate([(1.0, 'kl'), (0.001, 'kl'), (1.0, 'tv'),  (0.001, 'tv')]):
-                for j, (rho, aprox_type) in enumerate([(10.0, 'kl'), (0.01, 'kl'), (10.0, 'tv'),  (0.01, 'tv')]):
+                for j, (rho, aprox_type) in enumerate([(1.0, 'kl'), (0.001, 'kl'), (1.0, 'tv'),  (0.001, 'tv')]):
+                # for j, (rho, aprox_type) in enumerate([(10.0, 'kl'), (0.01, 'kl'), (10.0, 'tv'),  (0.01, 'tv')]):
 
                     # actually maybe it's over a few epsilon? Or a few rho? but unified in type for sure.
 
@@ -74,28 +74,11 @@ for data_set in data_sets:
                     with open(obs_se, 'rb') as f:
                         obs_se_costs = pickle.load(f)
 
-                    # with open(bary_file, 'rb') as f:
-                    #     bary_mmuot_cost = pickle.load(f)
-
-                    # with open(obs_file, 'rb') as f:
-                    #     observation_costs = pickle.load(f)
-                    
                     with open(cost_file, 'rb') as f:
                         se_costs = pickle.load(f)
 
-                    # temp0 = np.zeros(len(members)+1)
-                    # for i in range(len(members)+1):
-                    #     temp0[i] = observation_costs[t][f'debias_{i}']
-                    # obs_skill = (observation_costs[t]['bias'] - 1/(len(members)+1) * temp0.sum()).item()
-
-                    # temp0 = np.zeros(len(members)+1)
-                    # for i in range(len(members)+1):
-                    #     temp0[i] = bary_mmuot_cost[t][f'debias_{i}']
-                    # bary_mmuot_spread = (bary_mmuot_cost[t]['bias'] - 1/(len(members)+1) * temp0.sum()).item()
-
                     bary_se_spread = se_costs[k][0]['total_cost']
                     obs_se_error = obs_se_costs[k][0]['total_cost']
-                    # se_biased_cost = sum(se_costs[k][0]['unbalanced_sinkhorn_terms'])
 
                     barycentre = bary_output[k]
 
@@ -105,7 +88,6 @@ for data_set in data_sets:
                         X[:, :, 0],
                         X[:, :, 1],
                         np.ma.masked_where(bary <= 1e-40, bary),
-                        # cmap='Greys',
                         cmap='Blues',
                         shading='auto'
                     )
@@ -118,7 +100,6 @@ for data_set in data_sets:
                         X[:, :, 1],
                         mask.astype(int),    
                         levels=[0.5],
-                        # colors='blue',
                         colors='#b98224',
                         linestyles='dashdot',
                         linewidths=2,
@@ -126,10 +107,9 @@ for data_set in data_sets:
                     axes[j].set_title(f"mass ratio: {barycentre.sum().item()/obs_mass:.4g} obs se error: {obs_se_error:.4g}, se spread: {bary_se_spread:.4g}", fontsize=12)
 
             ax[0].set_ylabel("Debiased", rotation=90, fontsize=20, fontweight='bold')
-            # ax[1, 0].set_ylabel("Biased", rotation=90, fontsize=20, fontweight='bold')
 
-            # column_headers = ['rho: 1.0, kl', 'rho: 0.001, kl', 'rho: 1.0, tv', 'rho: 0.001, tv']
-            column_headers = ['rho: 10.0, kl', 'rho: 0.01, kl', 'rho: 10.0, tv', 'rho: 0.01, tv']
+            column_headers = ['rho: 1.0, kl', 'rho: 0.001, kl', 'rho: 1.0, tv', 'rho: 0.001, tv']
+            # column_headers = ['rho: 10.0, kl', 'rho: 0.01, kl', 'rho: 10.0, tv', 'rho: 0.01, tv']
 
             for col in range(4):
                 # Get the position of the top subplot in that column
@@ -147,12 +127,12 @@ for data_set in data_sets:
                 )
 
             try:
-                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_rho10_pov_time{t}_eps{str(epsilon)[2:]}.png', dpi=200)
+                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_pov_time{t}_eps{str(epsilon)[2:]}.png', dpi=200)
             # if not folder dataset exists, create it and save
             except FileNotFoundError:
                 import os
                 os.makedirs(f'barycentre_grid_pov/{data_set}', exist_ok=True)
-                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_rho10_pov_time{t}_eps{str(epsilon)[2:]}.png')
+                plt.savefig(f'barycentre_grid_pov/{data_set}/{data_set}_bary_pov_time{t}_eps{str(epsilon)[2:]}.png')
             plt.close('all')
 
 print("Done plotting!")

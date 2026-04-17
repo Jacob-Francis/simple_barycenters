@@ -265,13 +265,14 @@ elif set_number == 7:
     times = [0, 1, 2, 3, 4]
     # whether to roll forward to backwards 50 
     clusters = [50, -50, -50, -50, -50, -50, -50, -50, -50, -50]
+    members = [k for k in range(0, 10)]
 
     # Gather time series data
     data_list = []
     dictionary_in_time = {}
     for t in times:
         data_list = []
-        for k, mem in enumerate(len(clusters)):
+        for k, mem in enumerate(members):
             cluster = clusters[k]
             F, X = generate_circle_ensemble(mem, 20, path_to_data, seed_pert=rng.integers(0,int(1e7)))
             F = np.roll(F, cluster, axis=1)

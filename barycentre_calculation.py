@@ -66,7 +66,7 @@ else:
 
 bary_list = []
 cost_list = []
-fig, ax = plt.subplots(1, 3, figsize=(4*3, 4))
+fig, ax = plt.subplots(1, 4, figsize=(4*4, 4))
 
 for _, t in enumerate(times):
     data_bary_list = dictionary_in_time[t]['forecasts']
@@ -96,7 +96,7 @@ for _, t in enumerate(times):
                 termination_criterion='constraint',
                 lags={
                     'barycentre': 1,
-                    'debiasing': 1,
+                    'debiasing': debiasing_update_freq,
                 },
                 energy_tracking=True,
                 zero_tol=zero_tol,
@@ -127,6 +127,7 @@ for _, t in enumerate(times):
         )
 
     # constraint check
+    print(f"Dataset {snakemake.input[0]} Iterations: {len(potential_error_list)}")
     for key, value in constriants.items():
         print(f"Constraint {key}: {value[-1]}")
 
@@ -162,6 +163,11 @@ for _, t in enumerate(times):
     ax[2].semilogy(energy_list['total_cost'], label=f"{t}")
     ax[2].set_xlabel("Outer Iteration")
     ax[2].set_ylabel("Energy")
+
+    for key, value in constriants.items():
+        ax[3].semilogy(constriants[key], label=f"{t}, key={key}")
+    ax[3].set_xlabel("Outer Iteration")
+    ax[3].set_ylabel("Constraint")
 
 plt.savefig(snakemake.output[1])
 plt.clf()

@@ -101,10 +101,6 @@ for _, t in enumerate(times):
                 debiasing=debiasing,
                 verbose=False,
                 measure_constraints=False,
-                lags={
-                    'barycentre': 1,
-                    'debiasing': 1,
-                },
                 fixed_barycentre=centre_data[0],
                 zero_tol=zero_tol,
             )
@@ -131,10 +127,6 @@ for _, t in enumerate(times):
                 debiasing=debiasing,
                 verbose=False,
                 measure_constraints=False,
-                lags={
-                    'barycentre': 1,
-                    'debiasing': 1,
-                },
                 fixed_barycentre=centre_data[0],
                 zero_tol=1e-20
             )

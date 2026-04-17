@@ -22,15 +22,18 @@ debiasing = [True]
 epsilons = [0.001] #0.01,
 rhos = [1.0, 0.001]
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [k for k in range(1,10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run 7? 12, 13, 14
-# data_sets = [21] # [1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 16, 18, 19, 20, 21]  # [ 2, 5, 7, 8,9,  17, 11]
+data_sets = [15, 16, 17] # 10 desn't run 7?
+group = 8
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 # colour blind friendly colors
 colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
+linestyles_dict = dict(zip(data_sets, ['-', '--', '-.', ':']))
+
 #different marker for aprox
 markers = dict(kl='o', balanced='s', tv='^')
-aprox_colors = dict(kl='#377eb8', balanced='#4daf4a', tv='#ff7f00')
+# i want greys for the aprox types, w
+aprox_colors = dict(kl='black', balanced='#666666', tv='#cccccc')
 cost_colours = dict(
     spread='#377eb8', 
     skill='#ff7f00', 
@@ -39,19 +42,19 @@ cost_colours = dict(
     mass_ratio='#a65628'
     )
 
-list_of_files_not_found = []
+# main spread-skill figure
+fig_1, ax_1 = plt.subplots(1, 1, figsize=(8,6))
+fig_2, ax_2 = plt.subplots(1, 1, figsize=(8,6))
+ax = [ax_1, ax_2]
+
+fig_decomp, ax_decomp = plt.subplots(2, 2, figsize=(8*2, 6*2))
+
 
 for data_set in data_sets:
     data_file = ROOT_FILE+f"ensemble_data/ensemble_dataset_{data_set}.pkl"
 
-    try:
-        with open(data_file, 'rb') as f:
-            obvs_dict = pickle.load(f)
-    except FileNotFoundError:
-        print(f"File not found: {data_file}")
-        list_of_files_not_found.append(data_file)
-        continue # try next data set
-
+    with open(data_file, 'rb') as f:
+        obvs_dict = pickle.load(f)
     times = obvs_dict['times']
     members = obvs_dict['members']
     M = len(members)
@@ -64,13 +67,9 @@ for data_set in data_sets:
     for epsilon in epsilons:
         count = 0
 
-        # main spread-skill figure
-        fig, ax = plt.subplots(2, 2, figsize=(4*3, 5*3))
-
         plt.rcParams.update({"font.size": 14})
-        for l, (debiasing, rho) in enumerate([(True, 1.0), (True, 0.001)]):
+        for l, (debiasing, rho) in enumerate([(True, 1.0)]):  #, (True, 0.001)
             # decomposition plot
-            fig_decomp, ax_decomp = plt.subplots(2, 2, figsize=(4*3, 5*3))
 
             max_val = float('-inf')
             min_val = float('inf')
@@ -166,37 +165,37 @@ for data_set in data_sets:
                 min_val = min(min_val, min(obs_se.min(), se_spread.min()))
 
                 # zero check
-                labels = ['spread', 'error', 'spread decomp', 'error decomp']
-                for k, values in enumerate([se_spread, obs_se,  se_spread_decomp, obs_se_decomp]):
+                for values in [se_spread, obs_se,  se_spread_decomp, obs_se_decomp]:
                     if np.any(values <= 0):
-                        print(f"Warning {data_set}:  -ve in {labels[k]} {aprox_type} at time {t}. average: {np.mean(values[values <= 0])}")
+                        print(f"Warning: Found zero or negative values in {aprox_type} at time {t}. This may affect log-scale plotting. {np.mean(values[values <= 0])}")
 
-                ax[0, l].semilogy(times, se_spread, '--', marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='spread', color=cost_colours['spread'])
-                ax[0, l].semilogy(times, obs_se, '-.', marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='error', color=cost_colours['skill'])  
-                ax[0, l].semilogy(times, se_spread_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['spread'], alpha=0.5)
-                ax[0, l].semilogy(times, obs_se_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['skill'], alpha=0.5)
-                ax[0,l].set_title(f"Av. mass ratio: {mass_ratio.mean():.4g}", fontsize=16)
+                ax[0].semilogy(times, se_spread, linestyles_dict[data_set], marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='spread', color=cost_colours['spread'])
+                ax[0].semilogy(times, obs_se, linestyles_dict[data_set], marker=markers[aprox_type], markersize=10, markerfacecolor=None, label='error', color=cost_colours['skill'])  
+                ax[0].semilogy(times, se_spread_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['spread'], alpha=0.5)
+                ax[0].semilogy(times, obs_se_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['skill'], alpha=0.5)
+                ax[0].set_title(f"Av. mass ratio: {mass_ratio.mean():.4g}", fontsize=16)
 
-                ax[1, l].plot(se_spread, obs_se, 'k--', marker=markers[aprox_type], label=f'aprox={aprox_type}')
-                ax[1,l].set_title(f"rho: {rho}, debiasing: {debiasing}", fontsize=16)
+                # process zeros
+                ax[1].loglog(np.where(se_spread < 0, abs(se_spread), se_spread), np.where(obs_se < 0, abs(obs_se), obs_se), linestyles_dict[data_set], marker=markers[aprox_type], label=f'aprox={aprox_type}', markerfacecolor=None, color=aprox_colors[aprox_type])
+                # ax[1].set_title(f"rho: {rho}, debiasing: {debiasing}", fontsize=16)
 
                 # plot as simple points per time first
-                ax_decomp[0, 0].plot(times, obs_dict['transport_cost'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} obs transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
-                ax_decomp[0, 1].plot(times, obs_dict['marginal_penalty'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} obs marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
-                ax_decomp[1, 0].plot(times, bary_dict['transport_cost'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} bary transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
-                ax_decomp[1, 1].plot(times, bary_dict['marginal_penalty'].mean(axis=0), marker=markers[aprox_type], label=f'{aprox_type} bary marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[0, 0].plot(times, obs_dict['transport_cost'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} obs transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[0, 1].plot(times, obs_dict['marginal_penalty'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} obs marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 0].semilogy(times, bary_dict['transport_cost'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 1].semilogy(times, bary_dict['marginal_penalty'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
 
 
             # linear fit with max min
-            ax[1, l].plot([min_val, max_val], [min_val, max_val], 'k--', label='linear trend', alpha=0.5)
-            ax[1, l].set_xlabel('Spread (Barycentre MMUOT Cost)')
-            ax[1, l].set_ylabel('Skill/Error (Observation MMUOT Cost)')
-            ax[0, l].set_xlabel('Case "time"')
-            ax[0, l].set_ylabel('Value')
+            ax[1].loglog([max(min_val,0.0), max_val], [max(min_val,0.0), max_val], 'k--', label='linear trend', alpha=0.5)
+            ax[1].set_xlabel('Spread (Barycentre MMUOT Cost)')
+            ax[1].set_ylabel('Skill/Error (Observation MMUOT Cost)')
+            ax[0].set_xlabel('Case "time"')
+            ax[0].set_ylabel('Value')
 
-            pos = ax[1, l].get_position()
+            pos = ax[1].get_position()
 
-            ax_overlay = fig.add_axes(pos, frameon=False)  # new axis in same spot
+            ax_overlay = fig_2.add_axes(pos, frameon=False)  # new axis in same spot
             ax_overlay.patch.set_alpha(0)                  # transparent background
 
             # Optional: hide ticks so it doesn’t look messy
@@ -210,79 +209,79 @@ for data_set in data_sets:
             min_val = min(mu_e.min(), mu_s.min())
             max_val = max(mu_e.max(), mu_s.max())
             ax_overlay.plot(mu_s, mu_e,
-                            linestyle=':',
+                            linestyle=linestyles_dict[data_set],
                             marker='x',
                             color='grey',
                             label='true spread-skill')
             
             # save for different rho
+            labels = ['Observation Transport', 'Observation Marginal Penalty', 'Barycentre Transport', 'Barycentre Marginal Penalty']
             for i in range(2):
                 for j in range(2):
                     ax_decomp[i, j].set_xlabel('Time', fontsize=14)
-                    ax_decomp[i, j].set_ylabel('Cost', fontsize=14)
-                    ax_decomp[i, j].legend()
+                    ax_decomp[i, j].set_ylabel(labels[i*2 + j], fontsize=14)
+                    # ax_decomp[i, j].legend()
 
-            fig_decomp.suptitle(f"Cost Decomposition for dataset {data_set}, epsilon {epsilon}, rho {rho}", fontsize=16, fontweight='bold')
-            fig_decomp.tight_layout(rect=[0, 0.03, 1, 0.95])
-            fig_decomp.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_decomp_eps{str(epsilon)[2:]}_rho{rho}.png', dpi=200)
+            # fig_decomp.suptitle(f"Cost Decomposition for dataset {data_set}, epsilon {epsilon}, rho {rho}", fontsize=16, fontweight='bold')
+            # fig_decomp.tight_layout(rect=[0, 0.03, 1, 0.95])
 
     
-        ax[0, 0].set_ylabel("Scores", rotation=90, fontsize=20, fontweight='bold')
-        ax[1, 0].set_ylabel("Spread-Skill", rotation=90, fontsize=20, fontweight='bold')
+        ax[0].set_ylabel("Scores", rotation=90, fontsize=20, fontweight='bold')
+        ax[1].set_ylabel("Spread-Skill", rotation=90, fontsize=20, fontweight='bold')
 
-        column_headers = ['Debiased, rho: 1.0', 'Debiased, rho: 0.001']
+        # column_headers = ['Debiased, rho: 1.0']
 
-        for col in range(2):
-            # Get the position of the top subplot in that column
-            pos = ax[0, col].get_position()
+        # for col in range(1):
+        #     # Get the position of the top subplot in that column
+        #     pos = ax[0].get_position()
             
-            # Place text slightly above it
-            fig.text(
-                pos.x0 + pos.width / 2,
-                pos.y1 + 0.02,
-                column_headers[col],
-                ha='center',
-                va='bottom',
-                fontsize=20,
-                fontweight='bold'
-            )
+        #     # Place text slightly above it
+        #     fig.text(
+        #         pos.x0 + pos.width / 2,
+        #         pos.y1 + 0.02,
+        #         column_headers[col],
+        #         ha='center',
+        #         va='bottom',
+        #         fontsize=20,
+        #         fontweight='bold'
+        #     )
         
         legend_elements = [
             # ---- Mean curves (large markers) ----
-            Line2D([0], [0],
-                color=cost_colours['spread'], linestyle='--',
-                marker='o', markersize=10,
-                label='Spread (mean)'
-            ),
-            Line2D([0], [0],
-                color=cost_colours['skill'], linestyle='-.',
-                marker='o', markersize=10,
-                label='Error (mean)'
-            ),
+            # Line2D([0], [0],
+            #     color=cost_colours['spread'], 
+            #     marker='o', markersize=10,
+            #     label='Spread (mean)'
+            # ),
+            # Line2D([0], [0],
+            #     color=cost_colours['skill'],
+            #     marker='o', markersize=10,
+            #     label='Error (mean)'
+            # ),
 
-            # ---- Individual members (faded small markers) ----
-            Line2D([0], [0],
-                color=cost_colours['spread'], linestyle='',
-                marker='o', markersize=6,
-                alpha=0.4,
-                label='Spread (per member)'
-            ),
-            Line2D([0], [0],
-                color=cost_colours['skill'], linestyle='',
-                marker='o', markersize=6,
-                alpha=0.4,
-                label='Error (per member)'
-            ),
+            # # ---- Individual members (faded small markers) ----
+            # Line2D([0], [0],
+            #     color=cost_colours['spread'], linestyle='',
+            #     marker='o', markersize=6,
+            #     alpha=0.4,
+            #     label='Spread (per member)'
+            # ),
+            # Line2D([0], [0],
+            #     color=cost_colours['skill'], linestyle='',
+            #     marker='o', markersize=6,
+            #     alpha=0.4,
+            #     label='Error (per member)'
+            # ),
 
             # ---- Divergence marker meaning ----
             Line2D([0], [0],
-                marker=markers['kl'], color='black',
+                marker=markers['kl'], color=aprox_colors['kl'],
                 linestyle='none', markersize=12,
-                markerfacecolor='black',
+                markerfacecolor='none',
                 label='KL'
             ),
             Line2D([0], [0],
-                marker=markers['tv'], color='black',
+                marker=markers['tv'], color=aprox_colors['tv'],
                 linestyle='none', markersize=12,
                 markerfacecolor='none',
                 label='TV'
@@ -290,30 +289,51 @@ for data_set in data_sets:
 
             # ---- spread-skill diagonal ----
             Line2D([0], [0],
-                color='black', linestyle='--',
-                label='Ideal spread = error'
+                color='black', marker='x',
+                linestyle='none', markersize=12,
+                label='True Spread-Skill'
             ),
+            *[ 
+                Line2D([0], [0],
+                    color='black', linestyle=linestyles_dict[data_set],
+                    label=f'Dataset {data_set}'
+                ) for data_set in data_sets
+            ]                
         ]
 
-        fig.legend(
+        fig_1.legend(
             handles=legend_elements,
             loc='lower center',
             ncol=4,
             frameon=False,
-            bbox_to_anchor=(0.5, 0.00)
+            bbox_to_anchor=(0.5, -0.1)
         )
+        fig_2.legend(
+            handles=legend_elements,
+            loc='lower center',
+            ncol=4,
+            frameon=False,
+            bbox_to_anchor=(0.5, -0.1)
+        )
+        # fig_decomp.legend(
+        #     handles=legend_elements,
+        #     loc='lower center',
+        #     ncol=4,
+        #     frameon=False,
+        #     bbox_to_anchor=(0.5, 0.00)
+        # )
 
+try:
+    fig_1.savefig(f'spread_curves/group{group}/grp{group}_se_vary_eps{str(epsilon)[2:]}.png', dpi=200, bbox_inches="tight")
+    
+# if not folder dataset exists, create it and save
+except FileNotFoundError:
+    import os
+    os.makedirs(f'spread_curves/group{group}', exist_ok=True)
+    fig_1.savefig(f'spread_curves/group{group}/grp{group}_se_vary_eps{str(epsilon)[2:]}_rho{rho}.png', dpi=200, bbox_inches="tight")
 
-        try:
-            fig.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
-        # if not folder dataset exists, create it and save
-        except FileNotFoundError:
-            import os
-            os.makedirs(f'spread_curves/{data_set}', exist_ok=True)
-            fig.savefig(f'spread_curves/{data_set}/{data_set}_se_spread_eps{str(epsilon)[2:]}.png', dpi=200)
-        
-        plt.close('all')
+fig_2.savefig(f'spread_curves/group{group}/grp{group}_se_sprea_skill_eps{str(epsilon)[2:]}_rho{rho}.png', dpi=200, bbox_inches="tight")
 
-print('Files not found:')
-for file in list_of_files_not_found:
-    print(f"  {file}")
+fig_decomp.savefig(f'spread_curves/group{group}/grp{group}_se_spread_decomp_eps{str(epsilon)[2:]}_rho{rho}.png', dpi=200, bbox_inches="tight")
+
+plt.close('all')

@@ -752,7 +752,7 @@ def calculate_true_spread_skill(data_set_path):
 
     def ensemble_mean_error(mean, observation):
         M = np.prod(observation.shape)
-        return np.sqrt(((mean - observation)**2) / M)
+        return np.abs(mean - observation)
 
     def summary_ensemble_mean_error(mean, observation):
         temp = ensemble_mean_error(mean, observation)
