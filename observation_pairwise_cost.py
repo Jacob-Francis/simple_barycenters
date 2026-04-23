@@ -77,7 +77,7 @@ for _, t in enumerate(times):
     # total mass checking:
     print('TOTAL MASS obs: ', centre_data[0].sum().item())
     for i, d in enumerate(data_bary_list):
-        print(f'total mass forecast {i}: ', d.sum().item())
+        print(f'total mass forecast {i}: ', d[0].sum().item())
 
     # Generate data holding class
     data_processor = pwb.generate_barycentredataprocessor(
