@@ -57,6 +57,7 @@ cuda = best_gpu
 with open(snakemake.input[0], 'rb') as f:
     dictionary_in_time = pickle.load(f)
 
+data_set = snakemake.input[0].split('/')[-1].replace('.pkl', '')
 times = dictionary_in_time['times']
 members = dictionary_in_time['members']
 grid = dictionary_in_time['grid']
@@ -69,7 +70,7 @@ else:
 bary_list = []
 cost_list = []
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
-print('NEW CASE')
+print('NEW CASE', data_set)
 for _, t in enumerate(times):
     centre_data=dictionary_in_time[t]['observation']
     data_bary_list = dictionary_in_time[t]['forecasts']
