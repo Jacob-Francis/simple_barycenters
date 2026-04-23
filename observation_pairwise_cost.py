@@ -69,10 +69,16 @@ else:
 bary_list = []
 cost_list = []
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
-
+print('NEW CASE')
 for _, t in enumerate(times):
     centre_data=dictionary_in_time[t]['observation']
     data_bary_list = dictionary_in_time[t]['forecasts']
+
+    # total mass checking:
+    print('TOTAL MASS obs: ', centre_data[0].sum().item())
+    for i, d in enumerate(data_bary_list):
+        print(f'total mass forecast {i}: ', d.sum().item())
+
     # Generate data holding class
     data_processor = pwb.generate_barycentredataprocessor(
         data_bary_list, 
