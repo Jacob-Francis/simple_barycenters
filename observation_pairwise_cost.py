@@ -128,13 +128,13 @@ for _, t in enumerate(times):
                 rho=rho,
                 aprox=aprox_type,
                 max_iterates=mmuot_max_iterations,
-                tol=1e-7,
+                tol=mmuot_tol,
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
                 measure_constraints=False,
                 fixed_barycentre=centre_data[0],
-                zero_tol=1e-20
+                zero_tol=1e-12
             )
         )
     
