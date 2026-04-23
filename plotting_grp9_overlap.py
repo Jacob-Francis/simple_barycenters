@@ -22,7 +22,7 @@ debiasing = [True]
 epsilons = [0.001] #0.01,
 rhos = [1.0, 0.001]
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [18, 19, 20] # 10 desn't run 7?
+data_sets = [18,19,20] # 10 desn't run 7?
 group = 9
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
@@ -33,7 +33,7 @@ linestyles_dict = dict(zip(data_sets, ['-', '--', '-.', ':']))
 #different marker for aprox
 markers = dict(kl='o', balanced='s', tv='^')
 # i want greys for the aprox types, w
-aprox_colors = dict(kl='black', balanced='#666666', tv='#cccccc')
+aprox_colors = dict(kl='#377eb8', balanced='#4daf4a', tv='#ff7f00')
 cost_colours = dict(
     spread='#377eb8', 
     skill='#ff7f00', 
@@ -160,7 +160,7 @@ for data_set in data_sets:
                     barycentre = bary_output[k]
                     observation = obvs_dict[t]['observation'][0]
                     mass_ratio[k] = barycentre.sum().item()/observation.sum().item()
-                
+                    print(mass_ratio)
                 max_val = max(max_val, max(obs_se.max(), se_spread.max()))
                 min_val = min(min_val, min(obs_se.min(), se_spread.min()))
 
@@ -175,18 +175,19 @@ for data_set in data_sets:
                 ax[0].semilogy(times, obs_se_decomp.T, marker=markers[aprox_type], linestyle='', markersize=5, markerfacecolor=None, label='se spread per data', color=cost_colours['skill'], alpha=0.5)
                 ax[0].set_title(f"Av. mass ratio: {mass_ratio.mean():.4g}", fontsize=16)
 
-                ax[1].plot(se_spread, obs_se, linestyles_dict[data_set], marker=markers[aprox_type], label=f'aprox={aprox_type}', markerfacecolor=None, color=aprox_colors[aprox_type])
+                # process zeros
+                ax[1].loglog(np.where(se_spread < 0, abs(se_spread), se_spread), np.where(obs_se < 0, abs(obs_se), obs_se), linestyles_dict[data_set], marker=markers[aprox_type], label=f'aprox={aprox_type}', markerfacecolor=None, color=aprox_colors[aprox_type])
                 # ax[1].set_title(f"rho: {rho}, debiasing: {debiasing}", fontsize=16)
 
                 # plot as simple points per time first
                 ax_decomp[0, 0].plot(times, obs_dict['transport_cost'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} obs transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
                 ax_decomp[0, 1].plot(times, obs_dict['marginal_penalty'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} obs marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
-                ax_decomp[1, 0].semilogy(times, bary_dict['transport_cost'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
-                ax_decomp[1, 1].semilogy(times, bary_dict['marginal_penalty'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 0].plot(times, bary_dict['transport_cost'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary transport', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
+                ax_decomp[1, 1].plot(times, bary_dict['marginal_penalty'].mean(axis=0), linestyles_dict[data_set], marker=markers[aprox_type], label=f'{aprox_type} bary marg', color=aprox_colors[aprox_type], markersize=10, markerfacecolor='none')
 
 
             # linear fit with max min
-            ax[1].plot([min_val, max_val], [min_val, max_val], 'k--', label='linear trend', alpha=0.5)
+            ax[1].loglog([max(min_val,0.0), max_val], [max(min_val,0.0), max_val], 'k--', label='linear trend', alpha=0.5)
             ax[1].set_xlabel('Spread (Barycentre MMUOT Cost)')
             ax[1].set_ylabel('Skill/Error (Observation MMUOT Cost)')
             ax[0].set_xlabel('Case "time"')
@@ -314,13 +315,13 @@ for data_set in data_sets:
             frameon=False,
             bbox_to_anchor=(0.5, -0.1)
         )
-        # fig_decomp.legend(
-        #     handles=legend_elements,
-        #     loc='lower center',
-        #     ncol=4,
-        #     frameon=False,
-        #     bbox_to_anchor=(0.5, 0.00)
-        # )
+        fig_decomp.legend(
+            handles=legend_elements,
+            loc='lower center',
+            ncol=6,
+            frameon=False,
+            bbox_to_anchor=(0.5, 0.00)
+        )
 
 try:
     fig_1.savefig(f'spread_curves/group{group}/grp{group}_se_vary_eps{str(epsilon)[2:]}.png', dpi=200, bbox_inches="tight")

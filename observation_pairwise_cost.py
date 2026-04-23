@@ -122,7 +122,7 @@ for _, t in enumerate(times):
                 rho=rho,
                 aprox=aprox_type,
                 max_iterates=mmuot_max_iterations,
-                tol=mmuot_tol,
+                tol=1e-7,
                 epsilon_annealing=True,
                 debiasing=debiasing,
                 verbose=False,
