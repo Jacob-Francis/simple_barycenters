@@ -1,6 +1,6 @@
 max_iterations: 100
 tol: 1e-7
-cudas_allowed: [6,7]
+cudas_allowed: [5,6]
 debiasing_update_freq: 5
 mmuot_max_iterations: 1000
 mmuot_tol: 1e-9

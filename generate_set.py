@@ -413,7 +413,7 @@ elif set_number == 12:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=20)
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=35)
 
             data_list.append([F, None])
         
@@ -436,7 +436,7 @@ elif set_number == 13:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=60)
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=45)
 
             data_list.append([F, None])
         
@@ -458,7 +458,7 @@ elif set_number == 14:
     for t in times:
         data_list = []
         for mem in members:
-            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(np.arange(20, 60)))
+            F, X = generate_circle_ensemble(mem, t, path_to_data, seed_pert=rng.integers(0,int(1e7)), diameter=rng.choice(np.arange(35, 45)))
 
             data_list.append([F, None])
         
