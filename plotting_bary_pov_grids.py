@@ -21,7 +21,7 @@ data_sets = list(map(int, args))
 # should abstract times and members from global config
 epsilons = [0.001] #, 0.0005] #0.01,
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [18,19,20] # [k for k in range(1, 10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run, 12, 13, 14
+data_sets = [12,13,14,21,22] # [k for k in range(1, 10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run, 12, 13, 14
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 ###################################### plotting rho : 1.0 ,0.001, kl and tv, debiased only ######################################
