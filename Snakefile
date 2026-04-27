@@ -1,8 +1,8 @@
 debiasing = [True] # False
-epsilon = [0.005, 0.001] # 0.005, 
-rho = [1.0, 0.001] #[10.0, 1.0, 0.01, 0.001]
+epsilon = [0.001] # 0.005, 
+rho = [10.0, 1.0, 0.01, 0.001]
 aprox_type = ['kl', 'tv'] 
-data_sets = [12,13,14,21,22] # [k for k in range(1,10)] + [k for k in range(11,25+1)] # 10 desn't run
+data_sets = [9] # [k for k in range(1,10)] + [k for k in range(11,25+1)] # 10 desn't run
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 rule all:

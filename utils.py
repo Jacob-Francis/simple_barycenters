@@ -360,16 +360,14 @@ def generate_double_penalty_circle_ensemble_with_noise(member, t, r, noise, path
     # add noise
     N = np.prod(X_precipitation.shape)
     k = int(noise * N)
+    k = rng_state.integers(1, k + 1) # sample in [1,k]
     max_val = X_precipitation.max() # it'll be the same everywhere
 
+    zero_idx = np.flatnonzero(X_precipitation == 0)
 
-    # reject sampling to add noise only where zero
-    while k > 0:
-        idx = rng_state.choice(N, size=1, replace=False)
-        if X_precipitation.flat[idx] == 0:
-            X_precipitation.flat[idx] = max_val
-        k -= 1
-
+    chosen = rng_state.choice(zero_idx, size=k, replace=False)
+    X_precipitation.flat[chosen] = max_val
+  
     return Y_precipitation,  X_precipitation, X_coordinates
 
 
