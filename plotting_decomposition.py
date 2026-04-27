@@ -110,7 +110,7 @@ for data_set in data_sets:
         count = 0
 
         plt.rcParams.update({"font.size": 14})
-        for l, (debiasing, rho) in enumerate([(True, 10.), (True, 1.0), (True, 0.01), (True, 0.001)]):
+        for l, (debiasing, rho) in enumerate([(True, 1.0), (True, 0.01)]):  #(True, 10.), , (True, 0.001)
             # decomposition plot
             fig_decomp, ax_decomp = plt.subplots(2, 2, figsize=(4*3, 5*3))
 
