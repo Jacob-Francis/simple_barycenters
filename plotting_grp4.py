@@ -50,6 +50,9 @@ fig_ss, ax_ss = plt.subplots(1, 2, figsize=(18, 7))
 
 toggle = True
 
+min_val = float('inf')
+max_val = float('-inf')
+
 for no, rho in enumerate([1.0]):
 
     for data_set in [7,8]:
@@ -182,35 +185,34 @@ for no, rho in enumerate([1.0]):
         mu_e, sd_e, mu_s, sd_s = calculate_true_spread_skill(
             ROOT_FILE + f"ensemble_data/ensemble_dataset_{data_set}.pkl"
         )
-        min_val['TL'] = min(mu_e.min(), mu_s.min())
-        max_val['TL'] = max(mu_e.max(), mu_s.max())
+        min_val['TL'] = min(min_val['TL'], min(mu_e.min(), mu_s.min()))
+        max_val['TL'] = max(max_val['TL'], max(mu_e.max(), mu_s.max()))
         ax_ss[0].plot(mu_s, mu_e,
                 linestyle=line_style[data_set],
                 marker='x',
                 color='black',
                 label='true spread-skill',
                 markersize=12)
-        if toggle:
-            ax_ss[0].plot(
-                    [min_val['TL'], max_val['TL']],
-                    [min_val['TL'], max_val['TL']],
-                    linestyle='--',
-                    color='grey',
-                    markersize=15,
-                    alpha=0.5
-                )
-            toggle = False
-        # plot min/max linear lines
-        keys = ['TR']
-        for i in range(1):
-                ax_ss[no+1].plot(
-                    [min_val[keys[i]], max_val[keys[i]]],
-                    [min_val[keys[i]], max_val[keys[i]]],
-                    linestyle='--',
-                    color='grey',
-                    markersize=15,
-                    alpha=0.5
-                )
+    if toggle:
+        ax_ss[0].plot(
+                [min_val['TL'], max_val['TL']],
+                [min_val['TL'], max_val['TL']],
+                linestyle='--',
+                color='grey',
+                markersize=15,
+                alpha=0.5
+            )
+    # plot min/max linear lines
+    keys = ['TR']
+    for i in range(1):
+            ax_ss[no+1].plot(
+                [min_val[keys[i]], max_val[keys[i]]],
+                [min_val[keys[i]], max_val[keys[i]]],
+                linestyle='--',
+                color='grey',
+                markersize=15,
+                alpha=0.5
+            )
         
 # save for different rho
 ax_ss[0].set(xlabel='Spread', ylabel='Error')
