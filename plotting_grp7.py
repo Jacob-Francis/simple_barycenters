@@ -567,8 +567,8 @@ for data_set in [11, 12, 13, 14]:
             )
     
     # save for different rho
-    ax_ss[0].set(xlabel='Spread', ylabel='Error')
-    ax_ss[1].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
+    ax_ss[0].set(xlabel='Spread (Transport)', ylabel='Error (Transport)')
+    ax_ss[1].set(xlabel=r'Spread (Marginal Penalty)', ylabel=r'Error (Marginal Penalty)')
 from matplotlib.ticker import MaxNLocator
 ax_ss[0].xaxis.set_major_locator(MaxNLocator(5))
 
