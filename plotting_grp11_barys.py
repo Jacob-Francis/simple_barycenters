@@ -35,10 +35,10 @@ fig_ex, ax_ex = plt.subplots(1, 4, figsize=(9*4, 7))
 
 bary_list = [] # for colourbar
 cblabel = [
-    'Set23 16 | $ \rho = 1 $',
-    'Set23 32 | $ \rho = 1 $',
-    'Set23 16 | $ \rho = 0.001 $',
-    'Set23 32 | $ \rho = 0.001 $'
+    r'Set23 3, $ \rho = 1 $',
+    r'Set23 4, $ \rho = 1 $',
+    r'Set23 3, $ \rho = 0.001 $',
+    r'Set23 4, $ \rho = 0.001 $'
 ]
 for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3, 0.001), (23, 4, 0.001)]):
     act_bary = ROOT_FILE+f"pkl/{d}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
