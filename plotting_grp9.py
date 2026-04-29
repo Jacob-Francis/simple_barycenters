@@ -82,7 +82,7 @@ for data_set in [18, 19, 20]:
 
     count = 0
     l = 0
-    rho = 1.0
+    rho = 10.0
     debiasing = True
    
     max_val = {
@@ -319,7 +319,7 @@ for data_set in [18, 19, 20]:
 
     count = 0
     l = 0
-    rho = 1.0
+    rho = 10.0
     debiasing = True
    
     max_val = {
