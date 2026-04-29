@@ -22,7 +22,7 @@ debiasing = [True]
 epsilons = [0.001] #0.01,
 rhos = [1.0, 0.001]
 aprox_types = ['kl', 'tv'] # 'balanced',
-data_sets = [11] #[12,13,14,21,22] #[k for k in range(1,10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run 7? 12, 13, 14
+data_sets = [9] #[12,13,14,21,22] #[k for k in range(1,10)] + [11] + [k for k in range(15,25+1)] # 10 desn't run 7? 12, 13, 14
 # data_sets = [21] # [1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 16, 18, 19, 20, 21]  # [ 2, 5, 7, 8,9,  17, 11]
 ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
