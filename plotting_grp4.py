@@ -46,11 +46,11 @@ line_style={
     8:':'
 }
 
-fig_ss, ax_ss = plt.subplots(1, 4, figsize=(9*4, 7))
+fig_ss, ax_ss = plt.subplots(1, 2, figsize=(18, 7))
 
 toggle = True
 
-for no, rho in enumerate([1.0, 0.01, 0.001]):
+for no, rho in enumerate([1.0]):
 
     for data_set in [7,8]:
         data_file = ROOT_FILE+f"ensemble_data/ensemble_dataset_{data_set}.pkl"
@@ -213,10 +213,10 @@ for no, rho in enumerate([1.0, 0.01, 0.001]):
                 )
         
 # save for different rho
-ax_ss[0].set(xlabel='Spread', ylabel='Error/Skill')
-ax_ss[1].set(xlabel=r'Spread (Barycenter $S_{\epsilon}$ cost)', ylabel=r'Error/Skill (Observation $S_{\epsilon}$ Cost)')
-ax_ss[2].set(xlabel=r'Spread (Barycenter $S_{\epsilon}$ cost)', ylabel=r'Error/Skill (Observation $S_{\epsilon}$ Cost)')
-ax_ss[3].set(xlabel=r'Spread (Barycenter $S_{\epsilon}$ cost)', ylabel=r'Error/Skill (Observation $S_{\epsilon}$ Cost)')
+ax_ss[0].set(xlabel='Spread', ylabel='Error')
+ax_ss[1].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
+ax_ss[2].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
+ax_ss[3].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
 
 titles = [
     'True',
@@ -230,13 +230,13 @@ for k, ax in enumerate(ax_ss.ravel()):
 legend_elements = [
             # ---- Divergence marker meaning ----
             Line2D([0], [0],
-                marker=markers['kl'], color='black',
+                marker=markers['kl'], color=aprox_colors['kl'],
                 linestyle='none', markersize=12,
-                markerfacecolor='black',
+                markerfacecolor='none',
                 label='KL'
             ),
             Line2D([0], [0],
-                marker=markers['tv'], color='black',
+                marker=markers['tv'], color=aprox_colors['tv'],
                 linestyle='none', markersize=12,
                 markerfacecolor='none',
                 label='TV'
