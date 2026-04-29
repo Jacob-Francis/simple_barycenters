@@ -184,13 +184,13 @@ for no, rho in enumerate([1.0]):
         )
         min_val['TL'] = min(mu_e.min(), mu_s.min())
         max_val['TL'] = max(mu_e.max(), mu_s.max())
+        ax_ss[0].plot(mu_s, mu_e,
+                linestyle=line_style[data_set],
+                marker='x',
+                color='black',
+                label='true spread-skill',
+                markersize=12)
         if toggle:
-            ax_ss[0].plot(mu_s, mu_e,
-                            linestyle=line_style[data_set],
-                            marker='x',
-                            color='black',
-                            label='true spread-skill',
-                            markersize=12)
             ax_ss[0].plot(
                     [min_val['TL'], max_val['TL']],
                     [min_val['TL'], max_val['TL']],
@@ -199,6 +199,7 @@ for no, rho in enumerate([1.0]):
                     markersize=15,
                     alpha=0.5
                 )
+            toggle = False
         # plot min/max linear lines
         keys = ['TR']
         for i in range(1):
