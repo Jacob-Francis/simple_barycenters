@@ -334,6 +334,15 @@ for data_set in [21, 22]:
         # top right full se
         ax_ss[1].plot(se_spread, obs_se,  marker=markers[aprox_type], color=aprox_colors[aprox_type], linestyle=line_style[data_set], markersize=12, markerfacecolor='none')
 
+        for i, (xi, yi) in enumerate(zip(x, y)):
+            if i in [0, len(x)-1]:  # annotate only the first and last points
+                ax_ss[1].annotate(
+                    str(i),
+                    (xi, yi),
+                    xytext=(5, 5),
+                    textcoords='offset points',
+                    fontsize=10
+                )
     # Now plot independently
     mu_e, sd_e, mu_s, sd_s = calculate_true_spread_skill(
         ROOT_FILE + f"ensemble_data/ensemble_dataset_{data_set}.pkl"
