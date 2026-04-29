@@ -334,7 +334,7 @@ for data_set in [21, 22]:
         # top right full se
         ax_ss[1].plot(se_spread, obs_se,  marker=markers[aprox_type], color=aprox_colors[aprox_type], linestyle=line_style[data_set], markersize=12, markerfacecolor='none')
 
-        for i, (xi, yi) in enumerate(zip(x, y)):
+        for i, (xi, yi) in enumerate(zip(se_spread, obs_se)):
             if i in [0, len(x)-1]:  # annotate only the first and last points
                 ax_ss[1].annotate(
                     str(i),
