@@ -272,6 +272,6 @@ fig_ss.legend(
     bbox_to_anchor=(0.5, -0.05)
     )
 
-fig_ss.savefig(f'spread_curves/grp4/grp4_ss_78_allrho.png', dpi=200, bbox_inches='tight')
+fig_ss.savefig(f'spread_curves/grp4/grp4_ss_78_1rho.png', dpi=200, bbox_inches='tight')
 
 plt.close('all')
