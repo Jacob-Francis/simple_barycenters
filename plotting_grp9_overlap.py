@@ -28,7 +28,7 @@ ROOT_FILE = "/home/jjf817/PhD_jobs/simple_barycentres/"
 
 # colour blind friendly colors
 colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
-linestyles_dict = dict(zip(data_sets, ['-', '--', '-.', ':']))
+linestyles_dict = dict(zip(data_sets, [':', '--', '-.']))
 
 #different marker for aprox
 markers = dict(kl='o', balanced='s', tv='^')
@@ -215,7 +215,7 @@ for data_set in data_sets:
                             label='true spread-skill')
             
             # save for different rho
-            labels = ['Observation Transport', 'Observation Marginal Penalty', 'Barycentre Transport', 'Barycentre Marginal Penalty']
+            labels = ['Error (Transport)', 'Error (Marginal Penalty)', 'Spread (Transport)', 'Spread (Marginal Penalty)']
             for i in range(2):
                 for j in range(2):
                     ax_decomp[i, j].set_xlabel('Time', fontsize=14)

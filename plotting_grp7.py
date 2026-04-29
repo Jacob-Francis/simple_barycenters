@@ -231,7 +231,7 @@ for data_set in [11,12,13,14]:
 
     count = 0
     l = 0
-    rho = 1.0
+    rho = 10.0
     debiasing = True
    
     max_val = {
