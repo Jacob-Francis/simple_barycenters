@@ -40,7 +40,7 @@ cblabel = [
     'Set23 16 | $ \rho = 0.001 $',
     'Set23 32 | $ \rho = 0.001 $'
 ]
-for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3,0.001), (23, 4,0.001)]):
+for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3, 0.001), (23, 4, 0.001)]):
     act_bary = ROOT_FILE+f"pkl/{d}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
     ax = ax_ex[j]
     with open(act_bary, 'rb') as f:
@@ -57,7 +57,6 @@ for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3,0.001), (23, 
         se_costs = pickle.load(f)
 
     print('here', len(se_costs))
-    print('here', se_costs.keys())
     bary_se_spread = se_costs[k][0]['total_cost']
     obs_se_error = obs_se_costs[k][0]['total_cost']
     
