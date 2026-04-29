@@ -50,8 +50,14 @@ fig_ss, ax_ss = plt.subplots(1, 2, figsize=(18, 7))
 
 toggle = True
 
-min_val = float('inf')
-max_val = float('-inf')
+max_val = {
+    'TL': float('-inf'),
+    'TR': float('-inf'),
+} 
+min_val = {
+    'TL': float('inf'),
+    'TR': float('inf'),
+}
 
 for no, rho in enumerate([1.0]):
 
@@ -79,14 +85,7 @@ for no, rho in enumerate([1.0]):
         l = 0
         debiasing = True
     
-        max_val = {
-            'TL': float('-inf'),
-            'TR': float('-inf'),
-        } 
-        min_val = {
-            'TL': float('inf'),
-            'TR': float('inf'),
-        }
+    
         for aprox_type in aprox_types:
             cost_file = ROOT_FILE+f"pkl/{data_set}/barycentres_costs_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
             act_bary = ROOT_FILE+f"pkl/{data_set}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
