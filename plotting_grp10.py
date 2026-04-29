@@ -374,6 +374,8 @@ for data_set in [21, 22]:
 
 from matplotlib.ticker import MaxNLocator
 ax_ss[1].xaxis.set_major_locator(MaxNLocator(5))
+ax_ss[1].ticklabel_format(style='sci', axis='both', scilimits=(0, 0))
+
 
 legend_elements = [
             # ---- Divergence marker meaning ----
