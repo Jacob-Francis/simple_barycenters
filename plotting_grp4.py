@@ -191,7 +191,6 @@ for no, rho in enumerate([1.0]):
                             color='black',
                             label='true spread-skill',
                             markersize=12)
-            toggle=False
             ax_ss[0].plot(
                     [min_val['TL'], max_val['TL']],
                     [min_val['TL'], max_val['TL']],
