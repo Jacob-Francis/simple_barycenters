@@ -4,6 +4,7 @@ import pickle
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.ticker as ticker
 
 import sys
 from matplotlib.lines import Line2D
@@ -66,7 +67,7 @@ for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3, 0.001), (23,
         dataset = pickle.load(f)
 
     # grid
-    X = torch.meshgrid(*dataset['grid'], indexing='ij')
+    X = torch.meshgrid(*dataset['grid'], indexing='xy')
     X = torch.stack(X, dim=-1)
 
     # ensemble mean
@@ -86,9 +87,13 @@ for j, (d, k, rho) in enumerate([(23, 3, 1.0), (23, 4,1.0), (23, 3, 0.001), (23,
         cmap='Blues',
         shading='auto'
     )
-    plt.colorbar(img, ax=ax,     orientation='horizontal',
+    cbar = plt.colorbar(img, ax=ax,     orientation='horizontal',
     fraction=0.05,
-    pad=0.08, label=cblabel[j])  # Add colorbar for the barycentre
+    pad=0.08, label=cblabel[j]) 
+    cbar.formatter = ticker.ScalarFormatter(useMathText=True)
+    cbar.formatter.set_scientific(True)
+    cbar.formatter.set_powerlimits((0, 0))  # always use scientific notation
+    cbar.update_ticks()    
 
     # add support contour
     mask = ensemble_mean>0
