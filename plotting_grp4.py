@@ -215,8 +215,8 @@ for no, rho in enumerate([1.0]):
 # save for different rho
 ax_ss[0].set(xlabel='Spread', ylabel='Error')
 ax_ss[1].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
-ax_ss[2].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
-ax_ss[3].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
+# ax_ss[2].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
+# ax_ss[3].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
 
 titles = [
     'True',
