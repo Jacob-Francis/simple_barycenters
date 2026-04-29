@@ -1,5 +1,5 @@
 debiasing = [True] # False
-epsilon = [0.001, 0.0005] # 0.005, 
+epsilon = [0.001, 0.0001] # 0.005, 
 rho = [1.0] # [10.0, 1.0, 0.01, 0.001]
 aprox_type = ['kl', 'tv'] 
 data_sets = [21, 22] # [k for k in range(1,10)] + [k for k in range(11,25+1)] # 10 desn't run

@@ -93,7 +93,7 @@ for _, t in enumerate(times):
                 debiasing=debiasing,
                 verbose=False,
                 measure_constraints=True,
-                termination_criterion='constraint',
+                termination_criterion='barycentre', #constraint#
                 lags={
                     'barycentre': 1,
                     'debiasing': debiasing_update_freq,
