@@ -222,6 +222,10 @@ for data_set in data_sets:
                     ax_decomp[i, j].set_ylabel(labels[i*2 + j], fontsize=14)
                     # ax_decomp[i, j].legend()
 
+                    # log scale
+                    ax_decomp[i, j].set(xscale='log')
+                    ax_decomp[i, j].set(yscale='log')
+
             # fig_decomp.suptitle(f"Cost Decomposition for dataset {data_set}, epsilon {epsilon}, rho {rho}", fontsize=16, fontweight='bold')
             # fig_decomp.tight_layout(rect=[0, 0.03, 1, 0.95])
 
