@@ -368,13 +368,13 @@ for data_set in [3,4]:
 legend_elements = [
             # ---- Divergence marker meaning ----
             Line2D([0], [0],
-                marker=markers['kl'], color='black',
+                marker=markers['kl'], color=aprox_colors['kl'],
                 linestyle='none', markersize=12,
-                markerfacecolor='black',
+                markerfacecolor='none',
                 label='KL'
             ),
             Line2D([0], [0],
-                marker=markers['tv'], color='black',
+                marker=markers['tv'], color=aprox_colors['tv'],
                 linestyle='none', markersize=12,
                 markerfacecolor='none',
                 label='TV'
