@@ -361,8 +361,8 @@ for data_set in [3,4]:
             )
     
     # save for different rho
-    ax_ss[0].set(xlabel='Spread', ylabel='Error/Skill')
-    ax_ss[1].set(xlabel=r'Spread (Barycenter $S_{\epsilon}$ cost)', ylabel=r'Error/Skill (Observation $S_{\epsilon}$ Cost)')
+    ax_ss[0].set(xlabel='Spread', ylabel='Error')
+    ax_ss[1].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
 
 
 legend_elements = [
