@@ -35,11 +35,13 @@ for aprox_type in ['kl', 'tv']:
     fig_ex, ax_ex = plt.subplots(1, 4, figsize=(9*4, 7))
 
     bary_list = [] # for colourbar
+
+    #### AFTER RENUMBERING SET6 = SET8
     cblabel = [
-        'Set6 1',
-        'Set6 2',
-        'Set6 3',
-        'Set6 4'
+        'Set8 1',
+        'Set8 2',
+        'Set8 3',
+        'Set8 4'
     ]
     for j, (d,k) in enumerate([(6,0), (6,1), (6,2), (6,3)]):
         act_bary = ROOT_FILE+f"pkl/{d}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
@@ -113,10 +115,10 @@ for aprox_type in ['kl', 'tv']:
     rho=0.001
     bary_list = [] # for colourbar
     cblabel = [
-        'Set6 1',
-        'Set6 2',
-        'Set6 3',
-        'Set6 4'
+        'Set8 1',
+        'Set8 2',
+        'Set8 3',
+        'Set8 4'
     ]
     for j, (d,k) in enumerate([(6,0), (6,1), (6,2), (6,3)]):
         act_bary = ROOT_FILE+f"pkl/{d}/barycentres_output_eps_{epsilon}_rho_{rho}_aprox_{aprox_type}_debiasing_{debiasing}.pkl"
