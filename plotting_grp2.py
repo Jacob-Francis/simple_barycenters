@@ -197,7 +197,7 @@ for data_set in [5]:
                         linestyle='-',
                         marker='x',
                         color='black',
-                        label='true spread-skill',
+                        label='true spread-error',
                         markersize=12)
         toggle=False # only do this once
 
@@ -214,8 +214,8 @@ for data_set in [5]:
             )
     
     # save for different rho
-    ax_ss[0].set(xlabel='Spread', ylabel='Error/Skill')
-    ax_ss[1].set(xlabel=r'Spread (Barycenter $S_{\epsilon}$ cost)', ylabel=r'Error/Skill (Observation $S_{\epsilon}$ Cost)')
+    ax_ss[0].set(xlabel='Spread', ylabel='Error')
+    ax_ss[1].set(xlabel=r'Sinkhorn Spread', ylabel=r'Sinkhorn Error')
 
 from matplotlib.ticker import MaxNLocator
 ax_ss[1].xaxis.set_major_locator(MaxNLocator(5))
@@ -427,8 +427,8 @@ for data_set in [5]:
     #         )
     
     # save for different rho
-    ax_ss[0].set(xlabel='Spread (Transport)', ylabel='Error/Skill (Transport)')
-    ax_ss[1].set(xlabel=r'Spread (Marginal Penalty)', ylabel=r'Error/Skill (Marginal Penalty)')
+    ax_ss[0].set(xlabel='Spread (Transport)', ylabel='Error (Transport)')
+    ax_ss[1].set(xlabel=r'Spread (Marginal Penalty)', ylabel=r'Error (Marginal Penalty)')
 
 # log scale
 # ax_ss[1].set(yscale='log', xscale='log')
