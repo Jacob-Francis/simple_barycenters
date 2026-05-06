@@ -49,8 +49,9 @@ line_style={
     0.001:'-'
 }
 
-fig_ss, ax_ss = plt.subplots(1, 2, figsize=(9*2, 7))
+fig_ss, ax_ss_all = plt.subplots(1, 4, figsize=(9*2, 7))
 
+ax_ss = [ax_ss_all[0], ax_ss_all[1]]
 toggle=True
 
 for data_set in [5]:
@@ -221,54 +222,55 @@ ax_ss[1].xaxis.set_major_locator(MaxNLocator(5))
 # log scale
 # ax_ss[1].set(yscale='log', xscale='log')
 
-legend_elements = [
-            # ---- Divergence marker meaning ----
-            Line2D([0], [0],
-                marker=markers['kl'], color='black',
-                linestyle='none', markersize=12,
-                markerfacecolor='black',
-                label='KL'
-            ),
-            Line2D([0], [0],
-                marker=markers['tv'], color='black',
-                linestyle='none', markersize=12,
-                markerfacecolor='none',
-                label='TV'
-            ),
-            Line2D([0], [0],
-                marker='x', color='black',
-                linestyle='none', markersize=12,
-                markerfacecolor='none',
-                label='True'
-            ),
+# legend_elements = [
+#             # ---- Divergence marker meaning ----
+#             Line2D([0], [0],
+#                 marker=markers['kl'], color='black',
+#                 linestyle='none', markersize=12,
+#                 markerfacecolor='black',
+#                 label='KL'
+#             ),
+#             Line2D([0], [0],
+#                 marker=markers['tv'], color='black',
+#                 linestyle='none', markersize=12,
+#                 markerfacecolor='none',
+#                 label='TV'
+#             ),
+#             Line2D([0], [0],
+#                 marker='x', color='black',
+#                 linestyle='none', markersize=12,
+#                 markerfacecolor='none',
+#                 label='True'
+#             ),
 
-            # ---- spread-skill diagonal ----
-            Line2D([0], [0],
-                color='black', linestyle='--',
-                label='Ideal spread = error'
-            ),
-            *[Line2D([0], [0],
-                color='black', linestyle=line_style[rho],
-                label=rho,
-            )  for rho in [10.0, 1.0, 0.01, 0.001]
-],
-        ]
+#             # ---- spread-skill diagonal ----
+#             Line2D([0], [0],
+#                 color='black', linestyle='--',
+#                 label='Ideal spread = error'
+#             ),
+#             *[Line2D([0], [0],
+#                 color='black', linestyle=line_style[rho],
+#                 label=rho,
+#             )  for rho in [10.0, 1.0, 0.01, 0.001]
+# ],
+#         ]
 
-# add legend to fig_decomp
-fig_ss.legend(
-    handles=legend_elements,
-    loc='lower center',
-    ncol=8,
-    frameon=False,
-    bbox_to_anchor=(0.5, -0.05)
-    )
+# # add legend to fig_decomp
+# fig_ss.legend(
+#     handles=legend_elements,
+#     loc='lower center',
+#     ncol=8,
+#     frameon=False,
+#     bbox_to_anchor=(0.5, -0.05)
+#     )
 
-fig_ss.savefig(f'spread_curves/grp2/grp2_ss_5_allrho.png', dpi=200, bbox_inches='tight')
+# fig_ss.savefig(f'spread_curves/grp2/grp2_ss_5_allrho.png', dpi=200, bbox_inches='tight')
 
-plt.close('all')
+# plt.close('all')
 
 
-fig_ss, ax_ss = plt.subplots(1, 2, figsize=(9*2, 7))
+# fig_ss, ax_ss = plt.subplots(1, 2, figsize=(9*2, 7))
+ax_ss = [ax_ss_all[2], ax_ss_all[3]]
 
 toggle=True
 
