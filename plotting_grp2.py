@@ -49,7 +49,7 @@ line_style={
     0.001:'-'
 }
 
-fig_ss, ax_ss_all = plt.subplots(1, 4, figsize=(20, 6))
+fig_ss, ax_ss_all = plt.subplots(1, 4, figsize=(23, 6))
 
 ax_ss = [ax_ss_all[0], ax_ss_all[1]]
 toggle=True
