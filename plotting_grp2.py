@@ -49,7 +49,7 @@ line_style={
     0.001:'-'
 }
 
-fig_ss, ax_ss_all = plt.subplots(1, 4, figsize=(9*2, 7))
+fig_ss, ax_ss_all = plt.subplots(1, 4, figsize=(20, 6))
 
 ax_ss = [ax_ss_all[0], ax_ss_all[1]]
 toggle=True
@@ -436,13 +436,13 @@ for data_set in [5]:
 legend_elements = [
             # ---- Divergence marker meaning ----
             Line2D([0], [0],
-                marker=markers['kl'], color='black',
+                marker=markers['kl'], color=aprox_colors['kl'],
                 linestyle='none', markersize=12,
-                markerfacecolor='black',
+                markerfacecolor='none',
                 label='KL'
             ),
             Line2D([0], [0],
-                marker=markers['tv'], color='black',
+                marker=markers['tv'], color=aprox_colors['tv'],
                 linestyle='none', markersize=12,
                 markerfacecolor='none',
                 label='TV'
