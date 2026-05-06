@@ -256,11 +256,11 @@ legend_elements = [
             ),
             Line2D([0], [0],
                 color='black', linestyle=line_style[7],
-                label='Set7'
+                label='Set9' ## RENUMBERING 7 ---> 9
             ),
             Line2D([0], [0],
                 color='black', linestyle=line_style[8],
-                label='Set8'
+                label='Set10' ## RENUMBERING 8 ---> 10
             ),
         ]
 
